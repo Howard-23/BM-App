@@ -36,6 +36,7 @@ class ResponderPage extends StatelessWidget {
         Icons.local_fire_department,
       ),
     ];
+    const responderCenter = LatLng(14.8386, 120.2865);
 
     return Scaffold(
       appBar: AppBar(
@@ -292,13 +293,38 @@ class ResponderPage extends StatelessWidget {
             ),
 
             _sectionTitle('Map'),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const _FullscreenMapPage(
+                      title: 'Responder Map',
+                      initialCenter: responderCenter,
+                      initialZoom: 16,
+                      pins: [
+                        _MapPin(
+                          point: responderCenter,
+                          icon: Icons.location_on,
+                          color: Color(0xFFB11E1E),
+                          label: 'Barangay Emergency Response Point',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                icon: const Icon(Icons.fullscreen),
+                label: const Text('Full View'),
+              ),
+            ),
             SizedBox(
               height: 220,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: FlutterMap(
                   options: const MapOptions(
-                    initialCenter: LatLng(14.8386, 120.2865),
+                    initialCenter: responderCenter,
                     initialZoom: 14.4,
                     interactionOptions: InteractionOptions(
                       flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
@@ -313,7 +339,7 @@ class ResponderPage extends StatelessWidget {
                     const MarkerLayer(
                       markers: [
                         Marker(
-                          point: LatLng(14.8386, 120.2865),
+                          point: responderCenter,
                           width: 44,
                           height: 44,
                           child: Icon(
@@ -333,6 +359,96 @@ class ResponderPage extends StatelessWidget {
             const MedicalInfoAccordions(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MapPin {
+  final LatLng point;
+  final IconData icon;
+  final Color color;
+  final String label;
+
+  const _MapPin({
+    required this.point,
+    required this.icon,
+    required this.color,
+    required this.label,
+  });
+}
+
+class _FullscreenMapPage extends StatelessWidget {
+  final String title;
+  final LatLng initialCenter;
+  final double initialZoom;
+  final List<_MapPin> pins;
+
+  const _FullscreenMapPage({
+    required this.title,
+    required this.initialCenter,
+    required this.initialZoom,
+    required this.pins,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+        backgroundColor: const Color(0xFFF7F8FF),
+      ),
+      body: Stack(
+        children: [
+          FlutterMap(
+            options: MapOptions(
+              initialCenter: initialCenter,
+              initialZoom: initialZoom,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all,
+              ),
+            ),
+            children: [
+              TileLayer(
+                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                userAgentPackageName: 'com.example.barangaymo_app',
+              ),
+              MarkerLayer(
+                markers: pins
+                    .map(
+                      (pin) => Marker(
+                        point: pin.point,
+                        width: 46,
+                        height: 46,
+                        child: Icon(pin.icon, color: pin.color, size: 36),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+          ),
+          if (pins.isNotEmpty)
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 12,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE4E7F3)),
+                ),
+                child: Text(
+                  pins.map((pin) => pin.label).join(' | '),
+                  style: const TextStyle(
+                    color: Color(0xFF2F3248),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

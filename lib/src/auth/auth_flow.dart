@@ -2,14 +2,41 @@ part of barangaymo_app;
 
 enum UserRole { resident, official }
 
+String? _authToken;
+String? _currentOfficialMobile;
+
+String _normalizeMobileForKey(String input) {
+  return input.replaceAll(RegExp(r'\D'), '');
+}
+
+class _LocalActivationStore {
+  static const String _keyPrefix = 'official_activation_completed_';
+
+  static String _keyFor(String mobile) {
+    return '$_keyPrefix${_normalizeMobileForKey(mobile)}';
+  }
+
+  static Future<void> markCompleted(String mobile) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_keyFor(mobile), true);
+  }
+
+  static Future<bool> isCompleted(String mobile) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyFor(mobile)) ?? false;
+  }
+}
+
 class _AuthApiResult {
   final bool success;
   final String message;
   final String? token;
+  final bool activationCompleted;
   const _AuthApiResult({
     required this.success,
     required this.message,
     this.token,
+    this.activationCompleted = false,
   });
 }
 
@@ -17,10 +44,13 @@ class _AuthApi {
   _AuthApi._();
   static final _AuthApi instance = _AuthApi._();
 
-  static const String baseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://api.barangaymo.com/',
-  );
+  static const String _liveBaseUrl = 'https://api.barangaymo.com/';
+  static const String baseUrl = bool.fromEnvironment('dart.vm.product')
+      ? _liveBaseUrl
+      : String.fromEnvironment(
+          'API_BASE_URL',
+          defaultValue: _liveBaseUrl,
+        );
   static const Duration _requestTimeout = Duration(seconds: 15);
 
   String _normalizeMobile(String input) {
@@ -140,11 +170,13 @@ class _AuthApi {
       }
 
       if (response.statusCode == 201) {
+        final user = body['user'];
         return _AuthApiResult(
           success: true,
           message:
               (body['message'] as String?) ?? 'Account created successfully.',
           token: body['token'] as String?,
+          activationCompleted: _extractActivationCompleted(user),
         );
       }
 
@@ -218,10 +250,12 @@ class _AuthApi {
       }
 
       if (response.statusCode == 200) {
+        final user = body['user'];
         return _AuthApiResult(
           success: true,
           message: (body['message'] as String?) ?? 'Login successful.',
           token: body['token'] as String?,
+          activationCompleted: _extractActivationCompleted(user),
         );
       }
 
@@ -242,6 +276,145 @@ class _AuthApi {
             'Cannot connect to server. Check backend URL and if Laravel is running.',
       );
     }
+  }
+
+  Future<_AuthApiResult> completeOfficialActivation({
+    required Map<String, dynamic> payload,
+  }) async {
+    if (_authToken == null || _authToken!.isEmpty) {
+      return const _AuthApiResult(
+        success: false,
+        message: 'Missing login session. Please log in again.',
+      );
+    }
+
+    try {
+      http.Response? response;
+      Map<String, dynamic> body = <String, dynamic>{};
+      final endpoints = _endpointCandidates('activation/complete');
+      for (var i = 0; i < endpoints.length; i++) {
+        final current = await http
+            .post(
+              endpoints[i],
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': 'Bearer $_authToken',
+              },
+              body: jsonEncode(payload),
+            )
+            .timeout(_requestTimeout);
+        final decoded = _decodeResponseBody(current.body);
+        final shouldFallback =
+            i < endpoints.length - 1 &&
+            (current.statusCode == 404 ||
+                ((decoded['message'] as String?) ?? '').toLowerCase().contains(
+                      'route',
+                    ) &&
+                    ((decoded['message'] as String?) ?? '')
+                        .toLowerCase()
+                        .contains('not be found'));
+        if (shouldFallback) {
+          continue;
+        }
+        response = current;
+        body = decoded;
+        break;
+      }
+
+      if (response == null) {
+        return const _AuthApiResult(
+          success: false,
+          message:
+              'Cannot connect to server. Check backend URL and if Laravel is running.',
+        );
+      }
+
+      if (response.statusCode == 200) {
+        return _AuthApiResult(
+          success: true,
+          message:
+              (body['message'] as String?) ?? 'Activation details saved.',
+          activationCompleted: true,
+        );
+      }
+
+      if (response.statusCode == 404 &&
+          ((body['message'] as String?) ?? '')
+              .toLowerCase()
+              .contains('could not be found')) {
+        return const _AuthApiResult(
+          success: true,
+          message:
+              'Server activation endpoint is not available yet. Activation is saved on this device.',
+          activationCompleted: true,
+        );
+      }
+
+      return _AuthApiResult(
+        success: false,
+        message: _extractMessage(
+          body,
+          fallback: 'Could not save activation data. Please try again.',
+        ),
+      );
+    } on TimeoutException {
+      return const _AuthApiResult(
+        success: false,
+        message:
+            'Server is taking too long to respond. Please check backend and try again.',
+      );
+    } catch (_) {
+      return const _AuthApiResult(
+        success: false,
+        message:
+            'Cannot connect to server. Check backend URL and if Laravel is running.',
+      );
+    }
+  }
+
+  Future<void> logout() async {
+    if (_authToken == null || _authToken!.isEmpty) {
+      return;
+    }
+    try {
+      final endpoints = _endpointCandidates('logout');
+      for (var i = 0; i < endpoints.length; i++) {
+        final current = await http
+            .post(
+              endpoints[i],
+              headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer $_authToken',
+              },
+            )
+            .timeout(_requestTimeout);
+        if (current.statusCode != 404) {
+          break;
+        }
+      }
+    } catch (_) {}
+  }
+
+  bool _extractActivationCompleted(dynamic user) {
+    if (user is Map<String, dynamic>) {
+      return _toBool(user['activation_completed']);
+    }
+    return false;
+  }
+
+  bool _toBool(dynamic value) {
+    if (value is bool) {
+      return value;
+    }
+    if (value is num) {
+      return value != 0;
+    }
+    if (value is String) {
+      final normalized = value.trim().toLowerCase();
+      return normalized == '1' || normalized == 'true' || normalized == 'yes';
+    }
+    return false;
   }
 
   String _extractMessage(
@@ -1123,6 +1296,18 @@ class _AuthLoginPageState extends State<AuthLoginPage> {
         context,
       ).showSnackBar(SnackBar(content: Text(result.message)));
       return;
+    }
+
+    _authToken = result.token;
+    if (!_isResident) {
+      final localCompleted = await _LocalActivationStore.isCompleted(
+        _mobileController.text,
+      );
+      if (!mounted) {
+        return;
+      }
+      _officialActivationCompleted = result.activationCompleted || localCompleted;
+      _currentOfficialMobile = _normalizeMobileForKey(_mobileController.text);
     }
 
     Navigator.pushAndRemoveUntil(

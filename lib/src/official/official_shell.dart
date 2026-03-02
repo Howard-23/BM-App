@@ -3314,11 +3314,19 @@ class OfficialLogoutPage extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed: () => Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RoleGatewayScreen()),
-                  (_) => false,
-                ),
+                onPressed: () async {
+                  await _AuthApi.instance.logout();
+                  _authToken = null;
+                  _officialActivationCompleted = false;
+                  if (!context.mounted) return;
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const RoleGatewayScreen(),
+                    ),
+                    (_) => false,
+                  );
+                },
                 style: FilledButton.styleFrom(
                   backgroundColor: _officialHeaderStart,
                   foregroundColor: Colors.white,
@@ -3477,7 +3485,15 @@ class OfficialBarangayProfilePage extends StatefulWidget {
 
 class _OfficialBarangayProfilePageState
     extends State<OfficialBarangayProfilePage> {
-  static const _mapCenter = LatLng(14.8396, 120.2818);
+  // West Tapinac, Olongapo (Nominatim geocode center)
+  static const _mapCenter = LatLng(14.8322307, 120.2799430);
+  static const _profileBgStart = Color(0xFFFFFAF5);
+  static const _profileBgEnd = Color(0xFFFFF1E8);
+  static const _profileCardBorder = Color(0xFFF2DDCF);
+  static const _profileIcon = Color(0xFFB45309);
+  static const _profileSoft = Color(0xFFFFEFE3);
+  static const _profileTabInactive = Color(0xFF8E765E);
+  String _addressPin = 'WEST TAPINAC, OLONGAPO (14.8322307, 120.2799430)';
   String _addressBarangay = 'WEST TAPINAC';
   String _addressCity = 'CITY OF OLONGAPO';
   String _addressProvince = 'ZAMBALES';
@@ -3504,6 +3520,7 @@ class _OfficialBarangayProfilePageState
   ];
 
   Future<void> _editAddressDetails() async {
+    final pin = TextEditingController(text: _addressPin);
     final barangay = TextEditingController(text: _addressBarangay);
     final city = TextEditingController(text: _addressCity);
     final province = TextEditingController(text: _addressProvince);
@@ -3536,6 +3553,13 @@ class _OfficialBarangayProfilePageState
               ),
               const SizedBox(height: 10),
               TextField(
+                controller: pin,
+                decoration: const InputDecoration(
+                  labelText: 'Pin / Landmark',
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
                 controller: barangay,
                 decoration: const InputDecoration(labelText: 'Barangay'),
               ),
@@ -3559,7 +3583,8 @@ class _OfficialBarangayProfilePageState
                 width: double.infinity,
                 child: FilledButton(
                   onPressed: () {
-                    if (barangay.text.trim().isEmpty ||
+                    if (pin.text.trim().isEmpty ||
+                        barangay.text.trim().isEmpty ||
                         city.text.trim().isEmpty ||
                         province.text.trim().isEmpty ||
                         region.text.trim().isEmpty) {
@@ -3567,6 +3592,7 @@ class _OfficialBarangayProfilePageState
                       return;
                     }
                     setState(() {
+                      _addressPin = pin.text.trim().toUpperCase();
                       _addressBarangay = barangay.text.trim().toUpperCase();
                       _addressCity = city.text.trim().toUpperCase();
                       _addressProvince = province.text.trim().toUpperCase();
@@ -3673,10 +3699,10 @@ class _OfficialBarangayProfilePageState
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _officialCardBorder),
+        border: Border.all(color: _profileCardBorder),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x12000000),
+            color: Color(0x15B45309),
             blurRadius: 10,
             offset: Offset(0, 4),
           ),
@@ -3706,16 +3732,16 @@ class _OfficialBarangayProfilePageState
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFFFBFCFF),
+        color: _profileSoft,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE8EBF5)),
+        border: Border.all(color: _profileCardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 14, color: const Color(0xFF7A8199)),
+              Icon(icon, size: 14, color: _profileIcon),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -3723,7 +3749,7 @@ class _OfficialBarangayProfilePageState
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    color: Color(0xFF5F667E),
+                    color: Color(0xFF6E4A2A),
                     fontWeight: FontWeight.w700,
                     fontSize: 12,
                   ),
@@ -3760,7 +3786,7 @@ class _OfficialBarangayProfilePageState
   }) {
     return Container(
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFE9ECF5))),
+        border: Border(bottom: BorderSide(color: _profileCardBorder)),
       ),
       child: ListTile(
         dense: true,
@@ -3769,10 +3795,10 @@ class _OfficialBarangayProfilePageState
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF2EF),
+            color: _profileSoft,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: _officialHeaderStart, size: 20),
+          child: Icon(icon, color: _profileIcon, size: 20),
         ),
         title: Text(
           value,
@@ -3806,7 +3832,7 @@ class _OfficialBarangayProfilePageState
       decoration: BoxDecoration(
         border: last
             ? null
-            : const Border(bottom: BorderSide(color: Color(0xFFE9ECF5))),
+            : const Border(bottom: BorderSide(color: _profileCardBorder)),
       ),
       child: ListTile(
         dense: true,
@@ -3815,10 +3841,10 @@ class _OfficialBarangayProfilePageState
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: const Color(0xFFF6F7FC),
+            color: _profileSoft,
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: const Color(0xFF6C728B), size: 20),
+          child: Icon(icon, color: _profileIcon, size: 20),
         ),
         title: Text(
           value,
@@ -4012,12 +4038,12 @@ class _OfficialBarangayProfilePageState
       decoration: BoxDecoration(
         border: last
             ? null
-            : const Border(bottom: BorderSide(color: Color(0xFFE9ECF5))),
+            : const Border(bottom: BorderSide(color: _profileCardBorder)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF6B728A), size: 20),
+          Icon(icon, color: _profileIcon, size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -4036,7 +4062,7 @@ class _OfficialBarangayProfilePageState
                 Text(
                   label,
                   style: const TextStyle(
-                    color: _officialSubtext,
+                    color: Color(0xFF7A6857),
                     fontWeight: FontWeight.w600,
                     fontSize: 11,
                   ),
@@ -4096,11 +4122,16 @@ class _OfficialBarangayProfilePageState
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _officialCardBorder),
-                  color: const Color(0xFFFCFCFF),
+                  border: Border.all(color: _profileCardBorder),
+                  color: const Color(0xFFFFFCF8),
                 ),
                 child: Column(
                   children: [
+                    _addressRow(
+                      icon: Icons.push_pin_outlined,
+                      value: _addressPin,
+                      label: 'Pin / Landmark',
+                    ),
                     _addressRow(
                       icon: Icons.location_city_outlined,
                       value: _addressBarangay,
@@ -4175,8 +4206,8 @@ class _OfficialBarangayProfilePageState
         contentPadding: const EdgeInsets.fromLTRB(10, 6, 10, 6),
         leading: const CircleAvatar(
           radius: 22,
-          backgroundColor: Color(0xFFF2F4F9),
-          child: Icon(Icons.person, color: Color(0xFF9AA0B3), size: 24),
+          backgroundColor: _profileSoft,
+          child: Icon(Icons.person, color: _profileIcon, size: 24),
         ),
         title: Text(
           name,
@@ -4199,7 +4230,7 @@ class _OfficialBarangayProfilePageState
         trailing: IconButton(
           onPressed: () => _editCouncilMember(index: index),
           icon: const Icon(Icons.edit_outlined, size: 18),
-          color: const Color(0xFF696F85),
+          color: _profileIcon,
         ),
       ),
     );
@@ -4274,7 +4305,7 @@ class _OfficialBarangayProfilePageState
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFFF7F8FC), Color(0xFFF3ECEC)],
+              colors: [_profileBgStart, _profileBgEnd],
             ),
           ),
           child: Column(
@@ -4286,7 +4317,7 @@ class _OfficialBarangayProfilePageState
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
-                  border: Border.all(color: const Color(0xFFE5E7F3), width: 2),
+                  border: Border.all(color: _profileCardBorder, width: 2),
                 ),
                 padding: const EdgeInsets.all(10),
                 child: Image.asset(
@@ -4314,9 +4345,9 @@ class _OfficialBarangayProfilePageState
               ),
               const SizedBox(height: 10),
               const TabBar(
-                labelColor: _officialText,
-                unselectedLabelColor: Color(0xFF7B8098),
-                indicatorColor: Colors.black,
+                labelColor: _officialHeaderStart,
+                unselectedLabelColor: _profileTabInactive,
+                indicatorColor: _officialHeaderStart,
                 indicatorWeight: 3,
                 labelStyle: TextStyle(
                   fontWeight: FontWeight.w800,

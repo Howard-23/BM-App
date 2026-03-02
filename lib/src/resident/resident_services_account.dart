@@ -3950,64 +3950,184 @@ class _ResidentCommunityChatPageState extends State<ResidentCommunityChatPage> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   String _channel = 'General';
+  String _barangay = 'West Tapinac';
 
-  final List<_ResidentChatMessage> _messages = [
-    _ResidentChatMessage(
-      sender: 'Barangay Admin',
-      text:
-          'Good morning residents. Water interruption is scheduled tomorrow 9:00 AM to 12:00 PM.',
-      channel: 'Announcements',
-      sentAt: DateTime.now().subtract(const Duration(minutes: 34)),
-      isMine: false,
-      isOfficial: true,
-    ),
-    _ResidentChatMessage(
-      sender: 'Lester C. Nadong',
-      text:
-          'Please avoid parking near the barangay hall gate for today\'s relief truck unloading.',
-      channel: 'General',
-      sentAt: DateTime.now().subtract(const Duration(minutes: 28)),
-      isMine: false,
-      isOfficial: true,
-    ),
-    _ResidentChatMessage(
-      sender: 'Shamira Balandra',
-      text: 'Noted po, salamat sa update.',
-      channel: 'General',
-      sentAt: DateTime.now().subtract(const Duration(minutes: 25)),
-      isMine: true,
-      isOfficial: false,
-    ),
-    _ResidentChatMessage(
-      sender: 'Health Desk',
-      text: 'Free blood pressure screening starts at 2:00 PM today.',
-      channel: 'Health',
-      sentAt: DateTime.now().subtract(const Duration(minutes: 14)),
-      isMine: false,
-      isOfficial: true,
-    ),
-    _ResidentChatMessage(
-      sender: 'Shamira Balandra',
-      text: 'Can seniors join without prior registration?',
-      channel: 'Health',
-      sentAt: DateTime.now().subtract(const Duration(minutes: 11)),
-      isMine: true,
-      isOfficial: false,
-    ),
-    _ResidentChatMessage(
-      sender: 'Health Desk',
-      text: 'Yes. Walk-ins are accepted from 1:30 PM onward.',
-      channel: 'Health',
-      sentAt: DateTime.now().subtract(const Duration(minutes: 9)),
-      isMine: false,
-      isOfficial: true,
-    ),
+  static const _registeredBarangays = [
+    'West Tapinac',
+    'Old Cabalan',
+    'Banicain',
+    'East Tapinac',
+    'Kalaklan',
   ];
-
   static const _channels = ['General', 'Announcements', 'Health', 'Events'];
+  static const _onlineNow = {
+    'West Tapinac': 134,
+    'Old Cabalan': 98,
+    'Banicain': 76,
+    'East Tapinac': 88,
+    'Kalaklan': 64,
+  };
+  static const _barangaySecretaries = {
+    'West Tapinac': 'Brigette Barrera',
+    'Old Cabalan': 'Maricel Dela Cruz',
+    'Banicain': 'Jocelyn Reyes',
+    'East Tapinac': 'Aileen Santos',
+    'Kalaklan': 'Rowena Mendoza',
+  };
+
+  late final Map<String, List<_ResidentChatMessage>> _messagesByBarangay = {
+    'West Tapinac': [
+      _ResidentChatMessage(
+        sender: 'Brigette Barrera (Barangay Secretary)',
+        text:
+            'Secretary desk is now online for West Tapinac concerns and document follow-ups.',
+        channel: 'Announcements',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 36)),
+        isMine: false,
+        isOfficial: true,
+      ),
+      _ResidentChatMessage(
+        sender: 'Barangay Admin',
+        text:
+            'Good morning residents. Water interruption is scheduled tomorrow 9:00 AM to 12:00 PM.',
+        channel: 'Announcements',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 34)),
+        isMine: false,
+        isOfficial: true,
+      ),
+      _ResidentChatMessage(
+        sender: 'Lester C. Nadong',
+        text:
+            'Please avoid parking near the barangay hall gate for today\'s relief truck unloading.',
+        channel: 'General',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 28)),
+        isMine: false,
+        isOfficial: true,
+      ),
+      _ResidentChatMessage(
+        sender: 'Shamira Balandra',
+        text: 'Noted po, salamat sa update.',
+        channel: 'General',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 25)),
+        isMine: true,
+        isOfficial: false,
+      ),
+      _ResidentChatMessage(
+        sender: 'Health Desk',
+        text: 'Free blood pressure screening starts at 2:00 PM today.',
+        channel: 'Health',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 14)),
+        isMine: false,
+        isOfficial: true,
+      ),
+      _ResidentChatMessage(
+        sender: 'Shamira Balandra',
+        text: 'Can seniors join without prior registration?',
+        channel: 'Health',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 11)),
+        isMine: true,
+        isOfficial: false,
+      ),
+      _ResidentChatMessage(
+        sender: 'Health Desk',
+        text: 'Yes. Walk-ins are accepted from 1:30 PM onward.',
+        channel: 'Health',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 9)),
+        isMine: false,
+        isOfficial: true,
+      ),
+    ],
+    'Old Cabalan': [
+      _ResidentChatMessage(
+        sender: 'Maricel Dela Cruz (Barangay Secretary)',
+        text:
+            'Old Cabalan secretary desk is open today for permits, endorsements, and records inquiries.',
+        channel: 'Announcements',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 24)),
+        isMine: false,
+        isOfficial: true,
+      ),
+      _ResidentChatMessage(
+        sender: 'Old Cabalan Admin',
+        text:
+            'Reminder: Barangay clean-up drive starts at 6:00 AM this Saturday.',
+        channel: 'Announcements',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 22)),
+        isMine: false,
+        isOfficial: true,
+      ),
+      _ResidentChatMessage(
+        sender: 'Rina G.',
+        text: 'May truck ba for garbage collection later?',
+        channel: 'General',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 17)),
+        isMine: false,
+        isOfficial: false,
+      ),
+    ],
+    'Banicain': [
+      _ResidentChatMessage(
+        sender: 'Jocelyn Reyes (Barangay Secretary)',
+        text:
+            'Secretary office reminder: bring valid ID and request form copy for same-day document processing.',
+        channel: 'Announcements',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 31)),
+        isMine: false,
+        isOfficial: true,
+      ),
+      _ResidentChatMessage(
+        sender: 'Banicain Health Desk',
+        text: 'Pediatric vaccination is open until 4:00 PM at health center.',
+        channel: 'Health',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 29)),
+        isMine: false,
+        isOfficial: true,
+      ),
+    ],
+    'East Tapinac': [
+      _ResidentChatMessage(
+        sender: 'Aileen Santos (Barangay Secretary)',
+        text:
+            'East Tapinac secretary desk confirms walk-in records verification until 4:30 PM.',
+        channel: 'Announcements',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 21)),
+        isMine: false,
+        isOfficial: true,
+      ),
+      _ResidentChatMessage(
+        sender: 'East Tapinac SK',
+        text: 'Youth sportsfest registration closes tonight at 8:00 PM.',
+        channel: 'Events',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 19)),
+        isMine: false,
+        isOfficial: true,
+      ),
+    ],
+    'Kalaklan': [
+      _ResidentChatMessage(
+        sender: 'Rowena Mendoza (Barangay Secretary)',
+        text:
+            'Kalaklan secretary office now accepts certificate requests through this chat thread.',
+        channel: 'Announcements',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 18)),
+        isMine: false,
+        isOfficial: true,
+      ),
+      _ResidentChatMessage(
+        sender: 'Kalaklan Admin',
+        text: 'Road repainting on Olongapo-Bugallon Road starts tomorrow.',
+        channel: 'Announcements',
+        sentAt: DateTime.now().subtract(const Duration(minutes: 16)),
+        isMine: false,
+        isOfficial: true,
+      ),
+    ],
+  };
 
   List<_ResidentChatMessage> get _filteredMessages =>
-      _messages.where((m) => m.channel == _channel).toList()
+      (_messagesByBarangay[_barangay] ?? const <_ResidentChatMessage>[])
+          .where((m) => m.channel == _channel)
+          .toList()
         ..sort((a, b) => a.sentAt.compareTo(b.sentAt));
 
   @override
@@ -4028,7 +4148,8 @@ class _ResidentCommunityChatPageState extends State<ResidentCommunityChatPage> {
     final text = _messageController.text.trim();
     if (text.isEmpty) return;
     setState(() {
-      _messages.add(
+      _messagesByBarangay.putIfAbsent(_barangay, () => []);
+      _messagesByBarangay[_barangay]!.add(
         _ResidentChatMessage(
           sender: 'Shamira Balandra',
           text: text,
@@ -4050,9 +4171,22 @@ class _ResidentCommunityChatPageState extends State<ResidentCommunityChatPage> {
     });
   }
 
+  void _switchBarangay(String barangay) {
+    if (_barangay == barangay) return;
+    setState(() {
+      _barangay = barangay;
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final messages = _filteredMessages;
+    final onlineNow = _onlineNow[_barangay] ?? 0;
+    final secretary = _barangaySecretaries[_barangay] ?? 'Not assigned';
     return Scaffold(
       appBar: AppBar(
         title: const Text('Community Chat'),
@@ -4087,32 +4221,40 @@ class _ResidentCommunityChatPageState extends State<ResidentCommunityChatPage> {
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE5EBFF),
+                            color: const Color(0xFFFFEFE3),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: const Icon(
                             Icons.forum_rounded,
-                            color: Color(0xFF3B4FC3),
+                            color: Color(0xFFB45309),
                           ),
                         ),
                         const SizedBox(width: 9),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'West Tapinac Resident Chat',
-                                style: TextStyle(
+                                '$_barangay Resident Chat',
+                                style: const TextStyle(
                                   color: Color(0xFF2D334A),
                                   fontWeight: FontWeight.w800,
                                   fontSize: 17,
                                 ),
                               ),
                               Text(
-                                '134 online now',
-                                style: TextStyle(
+                                '$onlineNow online now',
+                                style: const TextStyle(
                                   color: Color(0xFF5F6682),
                                   fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                'Secretary on duty: $secretary',
+                                style: const TextStyle(
+                                  color: Color(0xFF7A5A3C),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 12,
                                 ),
                               ),
                             ],
@@ -4124,13 +4266,13 @@ class _ResidentCommunityChatPageState extends State<ResidentCommunityChatPage> {
                             vertical: 5,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE6F7EC),
+                            color: const Color(0xFFFFE9E2),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: const Text(
                             'LIVE',
                             style: TextStyle(
-                              color: Color(0xFF2B8456),
+                              color: Color(0xFFB11E1E),
                               fontWeight: FontWeight.w800,
                               fontSize: 12,
                             ),
@@ -4139,6 +4281,39 @@ class _ResidentCommunityChatPageState extends State<ResidentCommunityChatPage> {
                       ],
                     ),
                     const SizedBox(height: 8),
+                    const Text(
+                      'Connected Registered Barangays',
+                      style: TextStyle(
+                        color: Color(0xFF555D78),
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: _registeredBarangays.map((entry) {
+                          final active = entry == _barangay;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: ChoiceChip(
+                              label: Text(entry),
+                              selected: active,
+                              onSelected: (_) => _switchBarangay(entry),
+                              selectedColor: const Color(0xFFFFE9E2),
+                              labelStyle: TextStyle(
+                                color: active
+                                    ? const Color(0xFFB11E1E)
+                                    : const Color(0xFF4B5371),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
@@ -4151,6 +4326,13 @@ class _ResidentCommunityChatPageState extends State<ResidentCommunityChatPage> {
                               selected: active,
                               onSelected: (_) =>
                                   setState(() => _channel = entry),
+                              selectedColor: const Color(0xFFE8EFFF),
+                              labelStyle: TextStyle(
+                                color: active
+                                    ? const Color(0xFF3346A8)
+                                    : const Color(0xFF4B5371),
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           );
                         }).toList(),
@@ -4162,9 +4344,9 @@ class _ResidentCommunityChatPageState extends State<ResidentCommunityChatPage> {
             ),
             Expanded(
               child: messages.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
-                        'No messages yet for this channel.',
+                        'No messages yet for $_barangay ($_channel).',
                         style: TextStyle(
                           color: Color(0xFF6A7089),
                           fontWeight: FontWeight.w700,
@@ -4264,7 +4446,7 @@ class _ResidentCommunityChatPageState extends State<ResidentCommunityChatPage> {
                         minLines: 1,
                         maxLines: 3,
                         decoration: InputDecoration(
-                          hintText: 'Message $_channel...',
+                          hintText: 'Message $_barangay • $_channel...',
                           filled: true,
                           fillColor: Colors.white,
                           border: OutlineInputBorder(
@@ -4485,6 +4667,31 @@ class ResidentSupportPage extends StatelessWidget {
                     ],
                   ),
                 ],
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const _FullscreenMapPage(
+                      title: 'Service Map',
+                      initialCenter: _officePoint,
+                      initialZoom: 16,
+                      pins: [
+                        _MapPin(
+                          point: _officePoint,
+                          icon: Icons.location_on,
+                          color: Color(0xFFD44B43),
+                          label: 'Barangay Service Office',
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                icon: const Icon(Icons.fullscreen),
+                label: const Text('Full View'),
               ),
             ),
             const SizedBox(height: 10),

@@ -188,7 +188,61 @@ class _ActivationFlowState extends State<ActivationFlow> {
     return true;
   }
 
+  int? _parseOptionalInt(String input) {
+    final value = input.trim();
+    if (value.isEmpty) {
+      return null;
+    }
+    return int.tryParse(value);
+  }
+
+  Map<String, dynamic> _activationPayload() {
+    final secMiddle = _secMiddle.text.trim();
+    final secSuffix = _secSuffix == 'None' ? null : _secSuffix;
+    final punongMiddle = _punongMiddle.text.trim();
+    final punongSuffix = _punongSuffix == 'None' ? null : _punongSuffix;
+    final population = _parseOptionalInt(_population.text);
+    final households = _parseOptionalInt(_households.text);
+
+    return {
+      'province': _province,
+      'city_municipality': _city,
+      'barangay': _barangay,
+      'secretary_first_name': _secFirst.text.trim(),
+      if (secMiddle.isNotEmpty) 'secretary_middle_name': secMiddle,
+      'secretary_last_name': _secLast.text.trim(),
+      if (secSuffix != null) 'secretary_suffix': secSuffix,
+      'id_type': _idType,
+      if (_idName != null) 'valid_id_file_name': _idName,
+      'secretary_mobile': _secMobile.text.trim(),
+      'secretary_email': _secEmail.text.trim(),
+      'punong_first_name': _punongFirst.text.trim(),
+      if (punongMiddle.isNotEmpty) 'punong_middle_name': punongMiddle,
+      'punong_last_name': _punongLast.text.trim(),
+      if (punongSuffix != null) 'punong_suffix': punongSuffix,
+      'signature': _signature.text.trim(),
+      'accepted_certification': _acceptCert,
+      if (population != null) 'population': population,
+      if (households != null) 'households': households,
+      'division_type': _divisionType,
+      'founded': _founded.text.trim(),
+    };
+  }
+
   Future<void> _finish() async {
+    final saveResult = await _AuthApi.instance.completeOfficialActivation(
+      payload: _activationPayload(),
+    );
+    if (!saveResult.success) {
+      if (!mounted) return;
+      _msg(saveResult.message);
+      return;
+    }
+
+    await _LocalActivationStore.markCompleted(
+      _currentOfficialMobile ?? _secMobile.text,
+    );
+
     _officialActivationCompleted = true;
     if (!mounted) return;
     if (widget.goToHomeOnFinish) {
