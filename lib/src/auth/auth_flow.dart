@@ -1,4 +1,4 @@
-part of 'package:barangaymo_app/main.dart';
+part of barangaymo_app;
 
 enum UserRole { resident, official }
 
@@ -19,12 +19,34 @@ class _AuthApi {
 
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000/api',
+    defaultValue: 'https://api.barangaymo.com/',
   );
   static const Duration _requestTimeout = Duration(seconds: 15);
 
   String _normalizeMobile(String input) {
     return input.replaceAll(RegExp(r'\D'), '');
+  }
+
+  Uri _endpoint(String path) {
+    final trimmedBase = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+    return Uri.parse('$trimmedBase/$path');
+  }
+
+  List<Uri> _endpointCandidates(String path) {
+    final out = <Uri>[];
+
+    void add(String p) {
+      final uri = _endpoint(p);
+      if (!out.any((u) => u.toString() == uri.toString())) {
+        out.add(uri);
+      }
+    }
+
+    add(path);
+    add('api/$path');
+    return out;
   }
 
   Future<_AuthApiResult> register({
@@ -33,6 +55,12 @@ class _AuthApi {
     required String mobile,
     required String password,
     required String confirmPassword,
+    String? province,
+    String? cityMunicipality,
+    String? barangay,
+    String? middleName,
+    String? suffix,
+    String? religion,
   }) async {
     final normalizedMobile = _normalizeMobile(mobile);
     if (normalizedMobile.length < 10) {
@@ -55,23 +83,61 @@ class _AuthApi {
     }
 
     try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/register'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-            body: jsonEncode({
-              'name': name.trim(),
-              'mobile': normalizedMobile,
-              'role': role.name,
-              'password': password,
-              'password_confirmation': confirmPassword,
-            }),
-          )
-          .timeout(_requestTimeout);
-      final body = _decodeResponseBody(response.body);
+      http.Response? response;
+      Map<String, dynamic> body = <String, dynamic>{};
+      final endpoints = _endpointCandidates('register');
+      for (var i = 0; i < endpoints.length; i++) {
+        final current = await http
+            .post(
+              endpoints[i],
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              },
+              body: jsonEncode({
+                'name': name.trim(),
+                'mobile': normalizedMobile,
+                'role': role.name,
+                'password': password,
+                'password_confirmation': confirmPassword,
+                if (province != null && province.isNotEmpty)
+                  'province': province,
+                if (cityMunicipality != null && cityMunicipality.isNotEmpty)
+                  'city_municipality': cityMunicipality,
+                if (barangay != null && barangay.isNotEmpty)
+                  'barangay': barangay,
+                if (middleName != null && middleName.isNotEmpty)
+                  'middle_name': middleName,
+                if (suffix != null && suffix.isNotEmpty) 'suffix': suffix,
+                if (religion != null && religion.isNotEmpty)
+                  'religion': religion,
+              }),
+            )
+            .timeout(_requestTimeout);
+        final decoded = _decodeResponseBody(current.body);
+        final shouldFallback =
+            i < endpoints.length - 1 &&
+            (current.statusCode == 404 ||
+                ((decoded['message'] as String?) ?? '').toLowerCase().contains(
+                      'route',
+                    ) &&
+                    ((decoded['message'] as String?) ?? '')
+                        .toLowerCase()
+                        .contains('not be found'));
+        if (shouldFallback) {
+          continue;
+        }
+        response = current;
+        body = decoded;
+        break;
+      }
+      if (response == null) {
+        return const _AuthApiResult(
+          success: false,
+          message:
+              'Cannot connect to server. Check backend URL and if Laravel is running.',
+        );
+      }
 
       if (response.statusCode == 201) {
         return _AuthApiResult(
@@ -108,21 +174,48 @@ class _AuthApi {
   }) async {
     final normalizedMobile = _normalizeMobile(mobile);
     try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/login'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-            body: jsonEncode({
-              'mobile': normalizedMobile,
-              'role': role.name,
-              'password': password,
-            }),
-          )
-          .timeout(_requestTimeout);
-      final body = _decodeResponseBody(response.body);
+      http.Response? response;
+      Map<String, dynamic> body = <String, dynamic>{};
+      final endpoints = _endpointCandidates('login');
+      for (var i = 0; i < endpoints.length; i++) {
+        final current = await http
+            .post(
+              endpoints[i],
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              },
+              body: jsonEncode({
+                'mobile': normalizedMobile,
+                'role': role.name,
+                'password': password,
+              }),
+            )
+            .timeout(_requestTimeout);
+        final decoded = _decodeResponseBody(current.body);
+        final shouldFallback =
+            i < endpoints.length - 1 &&
+            (current.statusCode == 404 ||
+                ((decoded['message'] as String?) ?? '').toLowerCase().contains(
+                      'route',
+                    ) &&
+                    ((decoded['message'] as String?) ?? '')
+                        .toLowerCase()
+                        .contains('not be found'));
+        if (shouldFallback) {
+          continue;
+        }
+        response = current;
+        body = decoded;
+        break;
+      }
+      if (response == null) {
+        return const _AuthApiResult(
+          success: false,
+          message:
+              'Cannot connect to server. Check backend URL and if Laravel is running.',
+        );
+      }
 
       if (response.statusCode == 200) {
         return _AuthApiResult(
@@ -230,9 +323,7 @@ class RoleGatewayScreen extends StatelessWidget {
                   filterQuality: FilterQuality.high,
                 ),
               ),
-              const SizedBox(height: 8),
-              const Text('Choose account type'),
-              const SizedBox(height: 30),
+              const SizedBox(height: 26),
               Expanded(
                 child: Column(
                   children: [
@@ -447,14 +538,62 @@ class AuthRegisterPage extends StatefulWidget {
 class _AuthRegisterPageState extends State<AuthRegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _middleNameController = TextEditingController();
   final _mobileController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  bool _noMiddleName = false;
+  bool _noSuffix = true;
+  String _suffix = 'None';
+  String _religion = 'Select...';
+  String? _selectedProvince;
+  String? _selectedCity;
+  String? _selectedBarangay;
   bool _submitting = false;
+
+  static const Map<String, Map<String, List<String>>> _locationDirectory = {
+    'Zambales': {
+      'City of Olongapo': [
+        'Old Cabalan',
+        'Banicain',
+        'Kalaklan',
+        'West Tapinac',
+        'East Tapinac',
+      ],
+      'Subic': ['Calapacuan', 'Baraca-Camachile', 'Wawandue', 'Matain'],
+      'Castillejos': ['San Agustin', 'San Juan', 'Looc', 'Nagbayanan'],
+      'Iba': ['Bangantalinga', 'Palanginan', 'Sto. Rosario', 'Dirita'],
+    },
+    'Bataan': {
+      'Balanga City': ['Bagumbayan', 'Cupang Proper', 'Poblacion', 'Tuyo'],
+      'Dinalupihan': ['Bangal', 'Layac', 'Pag-asa', 'Tucop'],
+      'Orani': ['Baluarte', 'Sibul', 'Tala', 'Wawa'],
+    },
+    'Pampanga': {
+      'City of San Fernando': ['Del Pilar', 'Sindalan', 'Calulut', 'Lourdes'],
+      'Angeles City': ['Pampang', 'Pulungbulu', 'Malabanias', 'Cutcut'],
+      'Mabalacat City': ['Dau', 'Mawaque', 'Mabiga', 'Camachiles'],
+    },
+  };
+
+  List<String> get _cities {
+    if (_selectedProvince == null) return const [];
+    final cities = _locationDirectory[_selectedProvince];
+    if (cities == null) return const [];
+    return cities.keys.toList();
+  }
+
+  List<String> get _barangays {
+    if (_selectedProvince == null || _selectedCity == null) return const [];
+    final cities = _locationDirectory[_selectedProvince];
+    if (cities == null) return const [];
+    return cities[_selectedCity] ?? const [];
+  }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _middleNameController.dispose();
     _mobileController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -469,6 +608,81 @@ class _AuthRegisterPageState extends State<AuthRegisterPage> {
   String get _title =>
       _isResident ? 'Resident Registration' : 'Official Registration';
 
+  Color get _surfaceStart =>
+      _isResident ? const Color(0xFFF4F7FF) : const Color(0xFFFFF6F6);
+
+  Color get _surfaceEnd =>
+      _isResident ? const Color(0xFFEFF3FF) : const Color(0xFFFFEFEF);
+
+  Color get _fieldBorderColor =>
+      _isResident ? const Color(0xFFC6D1FA) : const Color(0xFFF0C8C8);
+
+  Color get _cardColor =>
+      _isResident ? const Color(0xFFFBFCFF) : const Color(0xFFFFFCFC);
+
+  Color get _titleColor =>
+      _isResident ? const Color(0xFF26305F) : const Color(0xFF5A2424);
+
+  Color get _labelColor =>
+      _isResident ? const Color(0xFF5D6788) : const Color(0xFF775B5B);
+
+  OutlineInputBorder _inputBorder(Color color, {double width = 1}) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: BorderSide(color: color, width: width),
+    );
+  }
+
+  InputDecoration _fieldDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: TextStyle(color: _labelColor, fontWeight: FontWeight.w600),
+      floatingLabelStyle: TextStyle(
+        color: _primaryColor,
+        fontWeight: FontWeight.w700,
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      border: _inputBorder(_fieldBorderColor),
+      enabledBorder: _inputBorder(_fieldBorderColor),
+      focusedBorder: _inputBorder(_primaryColor, width: 1.5),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+    );
+  }
+
+  Widget _sectionCard({required String title, required List<Widget> children}) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: _fieldBorderColor.withValues(alpha: 0.95)),
+        boxShadow: [
+          BoxShadow(
+            color: _primaryColor.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              color: _titleColor,
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ...children,
+        ],
+      ),
+    );
+  }
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -481,6 +695,14 @@ class _AuthRegisterPageState extends State<AuthRegisterPage> {
       mobile: _mobileController.text,
       password: _passwordController.text,
       confirmPassword: _confirmPasswordController.text,
+      province: _isResident ? _selectedProvince : null,
+      cityMunicipality: _isResident ? _selectedCity : null,
+      barangay: _isResident ? _selectedBarangay : null,
+      middleName: _isResident && !_noMiddleName
+          ? _middleNameController.text.trim()
+          : null,
+      suffix: _isResident && !_noSuffix && _suffix != 'None' ? _suffix : null,
+      religion: _isResident && _religion != 'Select...' ? _religion : null,
     );
     if (!mounted) {
       return;
@@ -512,106 +734,323 @@ class _AuthRegisterPageState extends State<AuthRegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: AppBar(title: Text(_title)),
+      appBar: AppBar(
+        title: Text(_title),
+        elevation: 0,
+        backgroundColor: _surfaceStart,
+        surfaceTintColor: _surfaceStart,
+        foregroundColor: _titleColor,
+      ),
       body: SafeArea(
         child: Form(
           key: _formKey,
-          child: ListView(
-            padding: EdgeInsets.fromLTRB(
-              16,
-              16,
-              16,
-              16 + MediaQuery.of(context).viewInsets.bottom,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [_surfaceStart, _surfaceEnd],
+              ),
             ),
-            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            children: [
-              SizedBox(
-                height: 100,
-                child: Image.asset(
-                  _isResident
-                      ? 'public/bm-residents.png'
-                      : 'public/bm-officials.png',
-                  fit: BoxFit.contain,
-                ),
+            child: ListView(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                16,
+                16,
+                16 + MediaQuery.of(context).viewInsets.bottom,
               ),
-              const SizedBox(height: 14),
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Full Name'),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Name is required.';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: _mobileController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(labelText: 'Mobile Number'),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Mobile number is required.';
-                  }
-                  if (value.replaceAll(RegExp(r'\D'), '').length < 10) {
-                    return 'Enter a valid mobile number.';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Password is required.';
-                  }
-                  if (value.length < 6) {
-                    return 'Minimum 6 characters.';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 10),
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Confirm Password',
-                ),
-                validator: (value) {
-                  if (value != _passwordController.text) {
-                    return 'Passwords do not match.';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 18),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _submitting ? null : _submit,
-                  style: FilledButton.styleFrom(backgroundColor: _primaryColor),
-                  child: Text(
-                    _submitting ? 'Please wait...' : 'Create Account',
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              children: [
+                Container(
+                  height: 112,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: _cardColor,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(color: _fieldBorderColor),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _primaryColor.withValues(alpha: 0.09),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Image.asset(
+                    _isResident
+                        ? 'public/bm-residents.png'
+                        : 'public/bm-officials.png',
+                    fit: BoxFit.contain,
                   ),
                 ),
-              ),
-              TextButton(
-                onPressed: _submitting
-                    ? null
-                    : () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => AuthLoginPage(role: widget.role),
+                const SizedBox(height: 12),
+                _sectionCard(
+                  title: 'Account Basics',
+                  children: [
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: _fieldDecoration('Full Name'),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Name is required.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _mobileController,
+                      keyboardType: TextInputType.phone,
+                      decoration: _fieldDecoration('Mobile Number'),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Mobile number is required.';
+                        }
+                        if (value.replaceAll(RegExp(r'\D'), '').length < 10) {
+                          return 'Enter a valid mobile number.';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                if (_isResident) ...[
+                  _sectionCard(
+                    title: 'Address Assignment (Required)',
+                    children: [
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedProvince,
+                        decoration: _fieldDecoration('1. Select Province'),
+                        items: _locationDirectory.keys
+                            .map(
+                              (v) => DropdownMenuItem(value: v, child: Text(v)),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedProvince = value;
+                            _selectedCity = null;
+                            _selectedBarangay = null;
+                          });
+                        },
+                        validator: (value) {
+                          if (!_isResident) return null;
+                          if (value == null || value.isEmpty) {
+                            return 'Province is required.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedCity,
+                        decoration: _fieldDecoration(
+                          '2. Select City/Municipality',
+                        ),
+                        items: _cities
+                            .map(
+                              (v) => DropdownMenuItem(value: v, child: Text(v)),
+                            )
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedCity = value;
+                            _selectedBarangay = null;
+                          });
+                        },
+                        validator: (value) {
+                          if (!_isResident) return null;
+                          if (value == null || value.isEmpty) {
+                            return 'City/Municipality is required.';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        initialValue: _selectedBarangay,
+                        decoration: _fieldDecoration('3. Select Barangay'),
+                        items: _barangays
+                            .map(
+                              (v) => DropdownMenuItem(value: v, child: Text(v)),
+                            )
+                            .toList(),
+                        onChanged: (value) =>
+                            setState(() => _selectedBarangay = value),
+                        validator: (value) {
+                          if (!_isResident) return null;
+                          if (value == null || value.isEmpty) {
+                            return 'Barangay is required.';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  _sectionCard(
+                    title: 'Personal Details',
+                    children: [
+                      TextFormField(
+                        controller: _middleNameController,
+                        enabled: !_noMiddleName,
+                        decoration: _fieldDecoration(
+                          '4. Middle Name (Optional)',
                         ),
                       ),
-                child: const Text('Already have an account? Log in'),
-              ),
-            ],
+                      CheckboxListTile(
+                        dense: true,
+                        activeColor: _primaryColor,
+                        contentPadding: EdgeInsets.zero,
+                        value: _noMiddleName,
+                        title: Text(
+                          'I have no middle name',
+                          style: TextStyle(
+                            color: _labelColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        onChanged: (v) => setState(() {
+                          _noMiddleName = v ?? false;
+                          if (_noMiddleName) _middleNameController.clear();
+                        }),
+                      ),
+                      const SizedBox(height: 6),
+                      DropdownButtonFormField<String>(
+                        initialValue: _suffix,
+                        decoration: _fieldDecoration('5. Suffix (Optional)'),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'None',
+                            child: Text('Select...'),
+                          ),
+                          DropdownMenuItem(value: 'Jr.', child: Text('Jr.')),
+                          DropdownMenuItem(value: 'Sr.', child: Text('Sr.')),
+                          DropdownMenuItem(value: 'III', child: Text('III')),
+                          DropdownMenuItem(value: 'IV', child: Text('IV')),
+                        ],
+                        onChanged: (value) =>
+                            setState(() => _suffix = value ?? 'None'),
+                      ),
+                      CheckboxListTile(
+                        dense: true,
+                        activeColor: _primaryColor,
+                        contentPadding: EdgeInsets.zero,
+                        value: _noSuffix,
+                        title: Text(
+                          'I have no suffix',
+                          style: TextStyle(
+                            color: _labelColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        onChanged: (v) => setState(() {
+                          _noSuffix = v ?? true;
+                          if (_noSuffix) _suffix = 'None';
+                        }),
+                      ),
+                      const SizedBox(height: 6),
+                      DropdownButtonFormField<String>(
+                        initialValue: _religion,
+                        decoration: _fieldDecoration('6. Religion'),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'Select...',
+                            child: Text('Select...'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Catholic',
+                            child: Text('Catholic'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Christian',
+                            child: Text('Christian'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Islam',
+                            child: Text('Islam'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Iglesia ni Cristo',
+                            child: Text('Iglesia ni Cristo'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'Others',
+                            child: Text('Others'),
+                          ),
+                        ],
+                        onChanged: (v) =>
+                            setState(() => _religion = v ?? 'Select...'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                ],
+                _sectionCard(
+                  title: 'Security',
+                  children: [
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: _fieldDecoration('Password'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Password is required.';
+                        }
+                        if (value.length < 6) {
+                          return 'Minimum 6 characters.';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: true,
+                      decoration: _fieldDecoration('Confirm Password'),
+                      validator: (value) {
+                        if (value != _passwordController.text) {
+                          return 'Passwords do not match.';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: _submitting ? null : _submit,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _primaryColor,
+                    ),
+                    child: Text(
+                      _submitting ? 'Please wait...' : 'Create Account',
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: _submitting
+                      ? null
+                      : () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AuthLoginPage(role: widget.role),
+                          ),
+                        ),
+                  child: Text(
+                    'Already have an account? Log in',
+                    style: TextStyle(
+                      color: _isResident
+                          ? const Color(0xFF303A8D)
+                          : const Color(0xFFB22727),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -642,7 +1081,12 @@ class _AuthLoginPageState extends State<AuthLoginPage> {
   String get _title => _isResident ? 'Resident Login' : 'Official Login';
 
   Widget _homeForRole() {
-    return _isResident ? const ResidentHomeShell() : const HomeShell();
+    if (_isResident) {
+      return const ResidentHomeShell();
+    }
+    return _officialActivationCompleted
+        ? const HomeShell()
+        : const ActivationFlow();
   }
 
   @override

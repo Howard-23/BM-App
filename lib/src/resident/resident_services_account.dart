@@ -1,4 +1,4 @@
-part of 'package:barangaymo_app/main.dart';
+part of barangaymo_app;
 
 class ResidentAnnouncementPage extends StatelessWidget {
   const ResidentAnnouncementPage({super.key});
@@ -129,13 +129,182 @@ class ResidentSpecialDocsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Special Docs')),
-      body: ListView(
-        children: [
-          _goTile(context, 'QR ID', const ScanQrPage()),
-          _goTile(context, 'RBI', const ResidentRbiCardPage()),
-          _goTile(context, 'Responder', const ResponderPage()),
-        ],
+      appBar: AppBar(
+        title: const Text('Special Docs'),
+        backgroundColor: const Color(0xFFF7F8FF),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFF6F8FF), Color(0xFFF9F2EE)],
+          ),
+        ),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(22),
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF3F4EC8), Color(0xFF7181F2)],
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x223A48C2),
+                    blurRadius: 14,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: const Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Digital Identity & Priority Docs',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 21,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          'Access RBI, QR verification, and responder tools in one secure place.',
+                          style: TextStyle(
+                            color: Color(0xFFDDE3FF),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Color(0x33FFFFFF),
+                    child: Icon(Icons.security_rounded, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            _docActionCard(
+              context: context,
+              title: 'QR ID Scanner',
+              subtitle: 'Validate resident identity and scan barangay IDs.',
+              icon: Icons.qr_code_scanner_rounded,
+              accent: const Color(0xFFD83D3D),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ScanQrPage()),
+              ),
+            ),
+            const SizedBox(height: 10),
+            _docActionCard(
+              context: context,
+              title: 'RBI Card',
+              subtitle: 'Open your profile, card details, and transactions.',
+              icon: Icons.badge_rounded,
+              accent: const Color(0xFF4557CA),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ResidentRbiCardPage()),
+              ),
+            ),
+            const SizedBox(height: 10),
+            _docActionCard(
+              context: context,
+              title: 'Responder',
+              subtitle:
+                  'Fast access to emergency contacts and location sharing.',
+              icon: Icons.emergency_rounded,
+              accent: const Color(0xFF8A5A44),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ResponderPage()),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _docActionCard({
+    required BuildContext context,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color accent,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(13),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: const Color(0xFFE3E7F4)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x12000000),
+                blurRadius: 9,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  color: accent.withValues(alpha: 0.14),
+                ),
+                child: Icon(icon, color: accent),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Color(0xFF2F334A),
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: Color(0xFF646C88),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.chevron_right_rounded, color: accent, size: 30),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -152,7 +321,13 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
   String _query = '';
   String _selectedStatus = 'All';
 
-  static const _statusFilters = ['All', 'Pending', 'Approved', 'Rejected'];
+  static const _statusFilters = [
+    'All',
+    'Pending',
+    'Approved',
+    'Rejected',
+    'Completed',
+  ];
 
   static const _history = [
     _ResidentRequestEntry(
@@ -165,7 +340,7 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
     ),
     _ResidentRequestEntry(
       category: 'Assistance',
-      title: 'Medical Assistance',
+      title: 'Medical Assistance Form',
       requestId: 'MA-26-0218',
       status: 'Pending',
       purpose: 'Hospital bill support',
@@ -178,6 +353,22 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
       status: 'Rejected',
       purpose: 'Scholarship document',
       date: 'Feb 17, 2026',
+    ),
+    _ResidentRequestEntry(
+      category: 'Business',
+      title: 'Business Endorsement',
+      requestId: 'BE-26-0210',
+      status: 'Approved',
+      purpose: 'Market stall permit',
+      date: 'Feb 10, 2026',
+    ),
+    _ResidentRequestEntry(
+      category: 'Clearance',
+      title: 'Barangay Clearance',
+      requestId: 'BC-26-0204',
+      status: 'Completed',
+      purpose: 'Claimed and downloaded copy',
+      date: 'Feb 04, 2026',
     ),
   ];
 
@@ -204,7 +395,7 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFF7F8FF), Color(0xFFF8F0EE)],
+            colors: [Color(0xFFF4F8FF), Color(0xFFF9F1ED)],
           ),
         ),
         child: ListView(
@@ -217,71 +408,99 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF4655CB), Color(0xFF7382F2)],
+                  colors: [Color(0xFF3B4CC7), Color(0xFF6F80F1)],
                 ),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x22414FC0),
-                    blurRadius: 12,
-                    offset: Offset(0, 5),
+                    color: Color(0x29424FC2),
+                    blurRadius: 15,
+                    offset: Offset(0, 6),
                   ),
                 ],
               ),
-              child: const Row(
+              child: Stack(
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Track Your Requests',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Monitor clearances and assistance applications in one place.',
-                          style: TextStyle(color: Color(0xFFE4E8FF)),
-                        ),
-                      ],
+                  Positioned(
+                    right: -18,
+                    top: -16,
+                    child: Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.16),
+                      ),
                     ),
                   ),
-                  SizedBox(width: 10),
-                  CircleAvatar(
-                    radius: 23,
-                    backgroundColor: Color(0x34FFFFFF),
-                    child: Icon(
-                      Icons.assignment_turned_in,
-                      color: Colors.white,
-                    ),
+                  const Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Track Your Requests',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              'Monitor clearances and assistance applications in one place.',
+                              style: TextStyle(
+                                color: Color(0xFFE4E8FF),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      CircleAvatar(
+                        radius: 23,
+                        backgroundColor: Color(0x34FFFFFF),
+                        child: Icon(
+                          Icons.assignment_turned_in_rounded,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 10),
-            TextField(
-              onChanged: (v) => setState(() => _query = v),
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: 'Search requests, ID, purpose...',
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: Color(0xFFE3E6F4)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(color: Color(0xFFE3E6F4)),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE3E7F4)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x11000000),
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: TextField(
+                onChanged: (v) => setState(() => _query = v),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search_rounded),
+                  hintText: 'Search requests, ID, purpose...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 14),
                 ),
               ),
             ),
             const SizedBox(height: 10),
             SizedBox(
-              height: 34,
+              height: 36,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _statusFilters.length,
@@ -289,16 +508,24 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
                 itemBuilder: (_, i) {
                   final label = _statusFilters[i];
                   final active = label == _selectedStatus;
+                  final count = label == 'All'
+                      ? _history.length
+                      : _history.where((item) => item.status == label).length;
                   return ChoiceChip(
-                    label: Text(label),
+                    label: Text('$label ($count)'),
                     selected: active,
                     onSelected: (_) => setState(() => _selectedStatus = label),
-                    selectedColor: const Color(0xFFDCE2FF),
+                    selectedColor: const Color(0xFFDCE4FF),
+                    side: BorderSide(
+                      color: active
+                          ? const Color(0xFF576DD8)
+                          : const Color(0xFFD9DFEF),
+                    ),
                     labelStyle: TextStyle(
                       color: active
-                          ? const Color(0xFF2E36A7)
+                          ? const Color(0xFF32419A)
                           : const Color(0xFF626983),
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                     ),
                   );
                 },
@@ -313,8 +540,10 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
               icon: Icons.description_outlined,
               buttonLabel: 'Request Clearance',
               color: const Color(0xFF4A66CB),
-              onTap: () =>
-                  _showFeature(context, 'Open clearance request form.'),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ClearancePage()),
+              ),
             ),
             const SizedBox(height: 10),
             _requestActionCard(
@@ -335,16 +564,33 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
               'Request History (${rows.length})',
               style: const TextStyle(
                 fontSize: 20,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w900,
                 color: Color(0xFF2F334A),
               ),
             ),
             const SizedBox(height: 8),
             if (rows.isEmpty)
-              const Card(
-                child: ListTile(
-                  leading: Icon(Icons.search_off),
-                  title: Text('No request records found'),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE2E6F2)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.search_off_rounded, color: Color(0xFF7A829D)),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'No request records found',
+                        style: TextStyle(
+                          color: Color(0xFF565D79),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               )
             else
@@ -392,7 +638,7 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
                             decoration: BoxDecoration(
                               color: _statusColor(
                                 item.status,
-                              ).withValues(alpha: 0.12),
+                              ).withValues(alpha: 0.13),
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
@@ -431,13 +677,15 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFEFF2FF),
+                              color: _statusColor(
+                                item.status,
+                              ).withValues(alpha: 0.08),
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
                               item.category,
-                              style: const TextStyle(
-                                color: Color(0xFF4D57A7),
+                              style: TextStyle(
+                                color: _statusColor(item.status),
                                 fontWeight: FontWeight.w800,
                                 fontSize: 12,
                               ),
@@ -445,11 +693,11 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
                           ),
                           const Spacer(),
                           TextButton.icon(
-                            onPressed: () => _showFeature(
-                              context,
-                              'Viewing ${item.requestId}',
+                            onPressed: () => _openRequestDetails(context, item),
+                            icon: const Icon(
+                              Icons.visibility_rounded,
+                              size: 18,
                             ),
-                            icon: const Icon(Icons.visibility, size: 18),
                             label: const Text('Details'),
                           ),
                         ],
@@ -461,12 +709,14 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
             const SizedBox(height: 8),
             SizedBox(
               width: double.infinity,
-              child: FilledButton(
+              child: OutlinedButton.icon(
                 onPressed: () => Navigator.pop(context),
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E35D3),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF3F4FC8),
+                  side: const BorderSide(color: Color(0xFFC4CEEE)),
                 ),
-                child: const Text('Return Home'),
+                icon: const Icon(Icons.home_rounded),
+                label: const Text('Return Home'),
               ),
             ),
           ],
@@ -497,8 +747,8 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
           Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(12),
@@ -510,9 +760,24 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
                 child: Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 19,
+                    fontWeight: FontWeight.w900,
                     color: Color(0xFF2F334A),
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  '2-3 days',
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 11,
                   ),
                 ),
               ),
@@ -535,7 +800,7 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
                 side: BorderSide(color: color.withValues(alpha: 0.4)),
                 foregroundColor: color,
               ),
-              icon: const Icon(Icons.arrow_forward, size: 18),
+              icon: const Icon(Icons.arrow_forward_rounded, size: 18),
               label: Text(buttonLabel),
             ),
           ),
@@ -548,6 +813,8 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
     switch (status) {
       case 'Approved':
         return const Color(0xFF2F965D);
+      case 'Completed':
+        return const Color(0xFF3B56C8);
       case 'Rejected':
         return const Color(0xFFD34F42);
       case 'Pending':
@@ -559,13 +826,56 @@ class _ResidentRequestsPageState extends State<ResidentRequestsPage> {
   IconData _statusIcon(String status) {
     switch (status) {
       case 'Approved':
-        return Icons.verified;
+        return Icons.verified_rounded;
+      case 'Completed':
+        return Icons.download_done_rounded;
       case 'Rejected':
-        return Icons.cancel_outlined;
+        return Icons.cancel_rounded;
       case 'Pending':
       default:
-        return Icons.schedule;
+        return Icons.schedule_rounded;
     }
+  }
+
+  IconData _entryIcon(_ResidentRequestEntry item) {
+    final title = item.title.toLowerCase();
+    if (title.contains('medical')) return Icons.local_hospital_rounded;
+    if (title.contains('business')) return Icons.store_rounded;
+    if (title.contains('residency')) return Icons.home_rounded;
+    if (title.contains('indigency')) return Icons.assignment_ind_rounded;
+    return Icons.description_rounded;
+  }
+
+  void _openRequestDetails(BuildContext context, _ResidentRequestEntry item) {
+    final accent = _statusColor(item.status);
+    final subtitle = switch (item.status) {
+      'Approved' => 'Approved on ${item.date}',
+      'Rejected' => 'Rejected on ${item.date}',
+      'Completed' => 'Completed and downloaded',
+      _ => 'Pending review and verification',
+    };
+    final detail = switch (item.status) {
+      'Rejected' => 'Reason: ${item.purpose}',
+      'Completed' => 'Released to resident on ${item.date}',
+      _ => 'Purpose: ${item.purpose}',
+    };
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _DocumentStatusDetailPage(
+          status: item.status,
+          accent: accent,
+          entry: _DocEntry(
+            title: item.title,
+            subtitle: subtitle,
+            detail: detail,
+            reference: item.requestId,
+            icon: _entryIcon(item),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -600,28 +910,59 @@ class ResidentServicesPage extends StatelessWidget {
 
   static const _allServices = [
     _ServiceAction('Requests', Icons.assignment, ResidentRequestsPage()),
-    _ServiceAction('Special Docs', Icons.stars, ResidentSpecialDocsPage()),
+    _ServiceAction('Assistance', Icons.volunteer_activism, AssistancePage()),
+    _ServiceAction('BPAT', Icons.shield, BpatPage()),
+    _ServiceAction('Clearance', Icons.description, ClearancePage()),
+    _ServiceAction('Council', Icons.groups, CouncilPage()),
+    _ServiceAction('Disclosure', Icons.table_chart, DisclosureBoardPage()),
+    _ServiceAction(
+      'Special Docs',
+      Icons.stars,
+      SimpleSerbilisPage(title: 'Special Docs', isOfficial: false),
+    ),
     _ServiceAction('Responder', Icons.local_shipping, ResponderPage()),
-    _ServiceAction('Gov Agencies', Icons.apartment, GovAgenciesPage()),
+    _ServiceAction('Provincial Gov', Icons.apartment, GovAgenciesPage()),
     _ServiceAction('Health', Icons.health_and_safety, HealthPage()),
+    _ServiceAction('Community', Icons.forum, CommunityPage()),
     _ServiceAction('QR ID', Icons.qr_code_scanner, ScanQrPage()),
     _ServiceAction('RBI', Icons.badge, ResidentRbiCardPage()),
     _ServiceAction(
       'Education',
       Icons.menu_book,
-      SimpleSerbilisPage(title: 'Education'),
+      SimpleSerbilisPage(title: 'Education', isOfficial: false),
     ),
     _ServiceAction(
       'Police',
       Icons.local_police,
-      SimpleSerbilisPage(title: 'Police'),
+      SimpleSerbilisPage(title: 'Police', isOfficial: false),
     ),
     _ServiceAction(
-      'Other Brgy',
+      'Other Barangay',
       Icons.travel_explore,
-      SimpleSerbilisPage(title: 'Other Barangay'),
+      SimpleSerbilisPage(title: 'Other Barangay', isOfficial: false),
+    ),
+    _ServiceAction(
+      'SK Education',
+      Icons.school,
+      SimpleSerbilisPage(title: 'SK Education', isOfficial: false),
+    ),
+    _ServiceAction('Officials', Icons.groups_2, CouncilPage()),
+    _ServiceAction(
+      'Programs',
+      Icons.assignment,
+      SimpleSerbilisPage(title: 'Programs', isOfficial: false),
+    ),
+    _ServiceAction('Scholarship', Icons.card_giftcard, AssistancePage()),
+    _ServiceAction(
+      'Sports',
+      Icons.sports_basketball,
+      SimpleSerbilisPage(title: 'Sports', isOfficial: false),
     ),
   ];
+
+  void _openService(BuildContext context, _ServiceAction action) {
+    Navigator.push(context, MaterialPageRoute(builder: (_) => action.page));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -729,6 +1070,14 @@ class ResidentServicesPage extends StatelessWidget {
               color: Color(0xFF2F3146),
             ),
           ),
+          const SizedBox(height: 2),
+          const Text(
+            'Frequently used resident services',
+            style: TextStyle(
+              color: Color(0xFF6A7089),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 8),
           SizedBox(
             height: 96,
@@ -746,6 +1095,14 @@ class ResidentServicesPage extends StatelessWidget {
               fontSize: 21,
               fontWeight: FontWeight.w800,
               color: Color(0xFF2F3146),
+            ),
+          ),
+          const SizedBox(height: 2),
+          const Text(
+            'Tap any tile to open the service page',
+            style: TextStyle(
+              color: Color(0xFF6A7089),
+              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
@@ -767,106 +1124,572 @@ class ResidentServicesPage extends StatelessWidget {
   }
 
   Widget _servicePill(BuildContext context, _ServiceAction action) {
-    return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => action.page),
-      ),
+    return Material(
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(18),
-      child: Container(
-        width: 122,
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFFFFFFFF), Color(0xFFF2F4FF)],
-          ),
-          border: Border.all(color: const Color(0xFFE2E5FF)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x15000000),
-              blurRadius: 8,
-              offset: Offset(0, 4),
+      child: InkWell(
+        onTap: () => _openService(context, action),
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          width: 128,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFFFFFFF), Color(0xFFF2F4FF)],
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(action.icon, color: const Color(0xFF4753B8)),
-            const SizedBox(height: 6),
-            Text(
-              action.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF424760),
-                fontWeight: FontWeight.w700,
+            border: Border.all(color: const Color(0xFFE2E5FF)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x15000000),
+                blurRadius: 8,
+                offset: Offset(0, 4),
               ),
-            ),
-          ],
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(action.icon, color: const Color(0xFF4753B8)),
+              const SizedBox(height: 6),
+              Text(
+                action.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF424760),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
   Widget _serviceGridTile(BuildContext context, _ServiceAction action) {
-    return InkWell(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => action.page),
-      ),
+    return Material(
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(14),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFE7E8F3)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x12000000),
-              blurRadius: 7,
-              offset: Offset(0, 3),
-            ),
-          ],
+      child: InkWell(
+        onTap: () => _openService(context, action),
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFE7E8F3)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x12000000),
+                blurRadius: 7,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFFE3E8FF), Color(0xFFF1F3FF)],
+                  ),
+                ),
+                child: Icon(
+                  action.icon,
+                  size: 19,
+                  color: const Color(0xFF4D59BF),
+                ),
+              ),
+              const SizedBox(height: 7),
+              Text(
+                action.name,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF43485E),
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 38,
-              height: 38,
+      ),
+    );
+  }
+}
+
+class _ResidentProfilePhotoValue {
+  final String? url;
+  final Uint8List? bytes;
+  final String? fileName;
+
+  const _ResidentProfilePhotoValue({this.url, this.bytes, this.fileName});
+}
+
+class _ResidentProfilePhotoStore {
+  static const presetUrls = [
+    'https://i.pravatar.cc/600?img=47',
+    'https://i.pravatar.cc/600?img=32',
+    'https://i.pravatar.cc/600?img=44',
+    'https://i.pravatar.cc/600?img=20',
+    'https://i.pravatar.cc/600?img=16',
+    'https://i.pravatar.cc/600?img=11',
+  ];
+
+  static final ValueNotifier<_ResidentProfilePhotoValue> photo =
+      ValueNotifier<_ResidentProfilePhotoValue>(
+        _ResidentProfilePhotoValue(url: presetUrls.first),
+      );
+}
+
+String _fileDisplayName(String value) {
+  if (value.isEmpty) return 'selected_image';
+  final normalized = value.replaceAll('\\', '/');
+  final parts = normalized.split('/');
+  return parts.isEmpty ? value : parts.last;
+}
+
+Future<({Uint8List bytes, String fileName})?> _pickResidentPhotoData() async {
+  final picker = ImagePicker();
+  final picked = await picker.pickImage(
+    source: ImageSource.gallery,
+    maxWidth: 1200,
+    imageQuality: 90,
+  );
+  if (picked == null) return null;
+  final bytes = await picked.readAsBytes();
+  return (bytes: bytes, fileName: picked.name);
+}
+
+Future<void> _openResidentProfilePhotoEditor(BuildContext context) async {
+  final current = _ResidentProfilePhotoStore.photo.value;
+  final urlController = TextEditingController(text: current.url ?? '');
+  String selectedUrl =
+      current.url ?? _ResidentProfilePhotoStore.presetUrls.first;
+  Uint8List? selectedBytes = current.bytes;
+  String? selectedFileName = current.fileName;
+
+  await showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) {
+      return StatefulBuilder(
+        builder: (context, setModal) {
+          return AnimatedPadding(
+            duration: const Duration(milliseconds: 180),
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Container(
+              margin: const EdgeInsets.fromLTRB(10, 20, 10, 10),
+              padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(24),
                 gradient: const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFFE3E8FF), Color(0xFFF1F3FF)],
+                  colors: [Color(0xFFF8FAFF), Color(0xFFF8F0F2)],
                 ),
               ),
-              child: Icon(
-                action.icon,
-                size: 19,
-                color: const Color(0xFF4D59BF),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Change Profile Photo',
+                    style: TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF2E3248),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'Choose a high-quality portrait or paste image URL.',
+                    style: TextStyle(
+                      color: Color(0xFF687089),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final picked = await _pickResidentPhotoData();
+                        if (picked == null) return;
+                        setModal(() {
+                          selectedBytes = picked.bytes;
+                          selectedFileName = picked.fileName;
+                          selectedUrl = '';
+                          urlController.clear();
+                        });
+                      },
+                      icon: const Icon(Icons.upload_file_rounded, size: 18),
+                      label: const Text('Upload Photo'),
+                    ),
+                  ),
+                  if (selectedBytes != null) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFDCE2F2)),
+                      ),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: SizedBox(
+                              width: 46,
+                              height: 46,
+                              child: Image.memory(
+                                selectedBytes!,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              selectedFileName == null
+                                  ? 'Uploaded photo selected'
+                                  : _fileDisplayName(selectedFileName!),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Color(0xFF3E465F),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'Clear',
+                            onPressed: () {
+                              setModal(() {
+                                selectedBytes = null;
+                                selectedFileName = null;
+                              });
+                            },
+                            icon: const Icon(
+                              Icons.close_rounded,
+                              color: Color(0xFF7B829F),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 210,
+                    child: GridView.builder(
+                      itemCount: _ResidentProfilePhotoStore.presetUrls.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10,
+                          ),
+                      itemBuilder: (_, i) {
+                        final url = _ResidentProfilePhotoStore.presetUrls[i];
+                        final selectedItem =
+                            selectedBytes == null && selectedUrl == url;
+                        return InkWell(
+                          onTap: () {
+                            setModal(() {
+                              selectedUrl = url;
+                              selectedBytes = null;
+                              selectedFileName = null;
+                            });
+                            urlController.text = url;
+                          },
+                          borderRadius: BorderRadius.circular(16),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: selectedItem
+                                    ? const Color(0xFF4B59C5)
+                                    : const Color(0xFFD9DEEE),
+                                width: selectedItem ? 2 : 1,
+                              ),
+                              boxShadow: selectedItem
+                                  ? const [
+                                      BoxShadow(
+                                        color: Color(0x334B59C5),
+                                        blurRadius: 8,
+                                        offset: Offset(0, 3),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(14),
+                              child: Stack(
+                                fit: StackFit.expand,
+                                children: [
+                                  Image.network(
+                                    url,
+                                    fit: BoxFit.cover,
+                                    filterQuality: FilterQuality.high,
+                                  ),
+                                  if (selectedItem)
+                                    const Align(
+                                      alignment: Alignment.topRight,
+                                      child: Padding(
+                                        padding: EdgeInsets.all(6),
+                                        child: CircleAvatar(
+                                          radius: 10,
+                                          backgroundColor: Color(0xFF4B59C5),
+                                          child: Icon(
+                                            Icons.check,
+                                            color: Colors.white,
+                                            size: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  TextField(
+                    controller: urlController,
+                    decoration: const InputDecoration(
+                      labelText: 'Or paste profile image URL',
+                      hintText: 'https://...',
+                    ),
+                    onChanged: (value) => setModal(() {
+                      selectedUrl = value.trim();
+                      selectedBytes = null;
+                      selectedFileName = null;
+                    }),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            final seed = DateTime.now().microsecondsSinceEpoch;
+                            final urls = _ResidentProfilePhotoStore.presetUrls;
+                            final next = urls[seed % urls.length];
+                            setModal(() {
+                              selectedUrl = next;
+                              selectedBytes = null;
+                              selectedFileName = null;
+                              urlController.text = next;
+                            });
+                          },
+                          icon: const Icon(Icons.refresh_rounded, size: 18),
+                          label: const Text('Randomize'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            _ResidentProfilePhotoStore.photo.value =
+                                const _ResidentProfilePhotoValue();
+                            Navigator.pop(context);
+                          },
+                          icon: const Icon(
+                            Icons.delete_outline_rounded,
+                            size: 18,
+                          ),
+                          label: const Text('Remove'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: () {
+                        final value = selectedUrl.trim();
+                        _ResidentProfilePhotoStore.photo.value =
+                            _ResidentProfilePhotoValue(
+                              url: selectedBytes == null
+                                  ? (value.isEmpty ? null : value)
+                                  : null,
+                              bytes: selectedBytes,
+                              fileName: selectedFileName,
+                            );
+                        Navigator.pop(context);
+                      },
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF3E4CC7),
+                      ),
+                      icon: const Icon(Icons.check_circle_outline_rounded),
+                      label: const Text('Apply Profile Photo'),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 7),
-            Text(
-              action.name,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Color(0xFF43485E),
-                fontWeight: FontWeight.w700,
+          );
+        },
+      );
+    },
+  );
+
+  urlController.dispose();
+}
+
+class _ResidentEditableProfileAvatar extends StatelessWidget {
+  final double size;
+  final VoidCallback onEdit;
+  const _ResidentEditableProfileAvatar({
+    required this.size,
+    required this.onEdit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<_ResidentProfilePhotoValue>(
+      valueListenable: _ResidentProfilePhotoStore.photo,
+      builder: (_, photo, __) {
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFFFFFFF), Color(0xFFDCE2FF)],
+                ),
+                border: Border.all(color: const Color(0x99FFFFFF), width: 2),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x22000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(3),
+                child: ClipOval(
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (photo.bytes != null && photo.bytes!.isNotEmpty)
+                        Image.memory(
+                          photo.bytes!,
+                          fit: BoxFit.cover,
+                          filterQuality: FilterQuality.high,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: const Color(0xFFE2E7FF),
+                            child: const Icon(
+                              Icons.person,
+                              color: Color(0xFF5B64A6),
+                              size: 38,
+                            ),
+                          ),
+                        )
+                      else if (photo.url != null && photo.url!.isNotEmpty)
+                        Image.network(
+                          photo.url!,
+                          fit: BoxFit.cover,
+                          filterQuality: FilterQuality.high,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: const Color(0xFFE2E7FF),
+                            child: const Icon(
+                              Icons.person,
+                              color: Color(0xFF5B64A6),
+                              size: 38,
+                            ),
+                          ),
+                        )
+                      else
+                        Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [Color(0xFFDEE2FF), Color(0xFFBAC2FF)],
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.person,
+                            size: 38,
+                            color: Colors.white,
+                          ),
+                        ),
+                      Positioned(
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          height: size * 0.35,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Colors.white.withValues(alpha: 0.28),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: -2,
+              bottom: -2,
+              child: InkWell(
+                onTap: onEdit,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFF3E4CC7),
+                    border: Border.all(color: Colors.white, width: 1.8),
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt_rounded,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                ),
               ),
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -905,26 +1728,9 @@ class ResidentProfilePage extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0x99FFFFFF),
-                      width: 2,
-                    ),
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFFDEE2FF), Color(0xFFBAC2FF)],
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.person,
-                    size: 38,
-                    color: Colors.white,
-                  ),
+                _ResidentEditableProfileAvatar(
+                  size: 72,
+                  onEdit: () => _openResidentProfilePhotoEditor(context),
                 ),
                 const SizedBox(width: 12),
                 const Expanded(
@@ -943,6 +1749,15 @@ class ResidentProfilePage extends StatelessWidget {
                       Text(
                         'RBI-3-7-34-53541212',
                         style: TextStyle(color: Color(0xFFDDE0FF)),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'Tap camera icon to change profile photo',
+                        style: TextStyle(
+                          color: Color(0xFFD8DCFF),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -1181,6 +1996,84 @@ class ResidentCartPage extends StatefulWidget {
   State<ResidentCartPage> createState() => _ResidentCartPageState();
 }
 
+class _ResidentCartHub {
+  static final ValueNotifier<int> refresh = ValueNotifier<int>(0);
+
+  static final List<_CartLineItem> items = [
+    _CartLineItem(
+      title: 'Lenovo IdeaPad 15.6"',
+      seller: 'L. Nadong Electronics',
+      price: 14999,
+      qty: 1,
+      icon: Icons.laptop_mac,
+      imageAsset: 'public/item-laptop.jpg',
+    ),
+    _CartLineItem(
+      title: 'Epson EcoTank L3210',
+      seller: 'Cabalan Office Depot',
+      price: 8290,
+      qty: 1,
+      icon: Icons.print,
+      imageAsset: 'public/item-printer.jpg',
+    ),
+  ];
+
+  static final List<_OrderHistoryEntry> orders = [];
+
+  static void _emit() => refresh.value++;
+
+  static void addProduct(_ResidentProductData product, {int qty = 1}) {
+    final safeQty = qty < 1 ? 1 : qty;
+    final index = items.indexWhere(
+      (item) => item.title == product.title && item.seller == product.seller,
+    );
+
+    if (index >= 0) {
+      items[index].qty = (items[index].qty + safeQty).clamp(1, 99);
+      _emit();
+      return;
+    }
+
+    items.insert(
+      0,
+      _CartLineItem(
+        title: product.title,
+        seller: product.seller,
+        price: product.price,
+        qty: safeQty,
+        icon: product.icon,
+        imageAsset: product.imageAsset,
+      ),
+    );
+    _emit();
+  }
+
+  static void changeQty(int index, int delta) {
+    if (index < 0 || index >= items.length) {
+      return;
+    }
+    final next = items[index].qty + delta;
+    items[index].qty = next.clamp(1, 99);
+    _emit();
+  }
+
+  static _CartLineItem removeAt(int index) {
+    final removed = items.removeAt(index);
+    _emit();
+    return removed;
+  }
+
+  static void clearItems() {
+    items.clear();
+    _emit();
+  }
+
+  static void addOrder(_OrderHistoryEntry order) {
+    orders.insert(0, order);
+    _emit();
+  }
+}
+
 class _ResidentCartPageState extends State<ResidentCartPage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
@@ -1195,32 +2088,26 @@ class _ResidentCartPageState extends State<ResidentCartPage>
   );
 
   bool _placingOrder = false;
-  final List<_CartLineItem> _cartItems = [
-    _CartLineItem(
-      title: 'Laptop',
-      seller: 'Tech Essentials',
-      price: 15000,
-      qty: 1,
-      icon: Icons.laptop,
-    ),
-    _CartLineItem(
-      title: 'Printer Ink Set',
-      seller: 'Office Plus',
-      price: 1350,
-      qty: 1,
-      icon: Icons.print,
-    ),
-  ];
-  final List<_OrderHistoryEntry> _orders = [];
+  List<_CartLineItem> get _cartItems => _ResidentCartHub.items;
+  List<_OrderHistoryEntry> get _orders => _ResidentCartHub.orders;
+
+  void _onCartUpdated() {
+    if (!mounted) {
+      return;
+    }
+    setState(() {});
+  }
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _ResidentCartHub.refresh.addListener(_onCartUpdated);
   }
 
   @override
   void dispose() {
+    _ResidentCartHub.refresh.removeListener(_onCartUpdated);
     _tabController.dispose();
     _nameOnCardController.dispose();
     _cardNumberController.dispose();
@@ -1238,16 +2125,15 @@ class _ResidentCartPageState extends State<ResidentCartPage>
 
   String _currency(double amount) => 'PHP ${amount.toStringAsFixed(2)}';
 
+  String _formatOrderDate(DateTime now) =>
+      '${now.month}/${now.day}/${now.year}';
+
   void _changeQty(int index, int delta) {
-    setState(() {
-      final next = _cartItems[index].qty + delta;
-      _cartItems[index].qty = next < 1 ? 1 : next;
-    });
+    _ResidentCartHub.changeQty(index, delta);
   }
 
   void _removeItem(int index) {
-    final item = _cartItems[index];
-    setState(() => _cartItems.removeAt(index));
+    final item = _ResidentCartHub.removeAt(index);
     _showFeature(context, '${item.title} removed from cart');
   }
 
@@ -1266,6 +2152,10 @@ class _ResidentCartPageState extends State<ResidentCartPage>
 
     setState(() => _placingOrder = true);
     await Future<void>.delayed(const Duration(milliseconds: 900));
+    if (!mounted) {
+      return;
+    }
+    final now = DateTime.now();
     final orderItems = List<_CartLineItem>.from(
       _cartItems.map(
         (e) => _CartLineItem(
@@ -1274,21 +2164,20 @@ class _ResidentCartPageState extends State<ResidentCartPage>
           price: e.price,
           qty: e.qty,
           icon: e.icon,
+          imageAsset: e.imageAsset,
         ),
       ),
     );
     final order = _OrderHistoryEntry(
       id: 'ORD-${DateTime.now().millisecondsSinceEpoch % 100000}',
-      date: 'Feb 20, 2026',
+      date: _formatOrderDate(now),
       status: 'Processing',
       total: _grandTotal,
       items: orderItems,
     );
-    setState(() {
-      _orders.insert(0, order);
-      _cartItems.clear();
-      _placingOrder = false;
-    });
+    _ResidentCartHub.addOrder(order);
+    _ResidentCartHub.clearItems();
+    setState(() => _placingOrder = false);
     _tabController.animateTo(1);
     _showFeature(context, 'Order placed successfully.');
   }
@@ -1585,6 +2474,74 @@ class _ResidentCartPageState extends State<ResidentCartPage>
 
   Widget _cartItemCard(int i) {
     final item = _cartItems[i];
+
+    Widget thumbnail() {
+      return Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: const Color(0xFFE8ECFF),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: item.imageAsset == null
+            ? Icon(item.icon, color: const Color(0xFF4C57BB))
+            : ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  item.imageAsset!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                      Icon(item.icon, color: const Color(0xFF4C57BB)),
+                ),
+              ),
+      );
+    }
+
+    Widget qtyControls() {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF5F7FF),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: const Color(0xFFDDE2F2)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              onPressed: () => _changeQty(i, -1),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 26, height: 26),
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.remove_circle_outline, size: 18),
+            ),
+            SizedBox(
+              width: 18,
+              child: Text(
+                '${item.qty}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
+            IconButton(
+              onPressed: () => _changeQty(i, 1),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 26, height: 26),
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.add_circle_outline, size: 18),
+            ),
+            IconButton(
+              onPressed: () => _removeItem(i),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 26, height: 26),
+              visualDensity: VisualDensity.compact,
+              icon: const Icon(Icons.delete_outline, size: 18),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 9),
       decoration: BoxDecoration(
@@ -1592,76 +2549,58 @@ class _ResidentCartPageState extends State<ResidentCartPage>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE4E7F3)),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-        leading: Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE8ECFF),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(item.icon, color: const Color(0xFF4C57BB)),
-        ),
-        title: Text(
-          item.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-            color: Color(0xFF2F3248),
-          ),
-        ),
-        subtitle: Text(
-          '${item.seller} | ${_currency(item.price)}',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Color(0xFF686D86),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        trailing: SizedBox(
-          width: 104,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              IconButton(
-                onPressed: () => _changeQty(i, -1),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(
-                  width: 24,
-                  height: 24,
-                ),
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.remove_circle_outline),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact = constraints.maxWidth < 390;
+            final details = Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF2F3248),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${item.seller} | ${_currency(item.price)}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF686D86),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                '${item.qty}',
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-              IconButton(
-                onPressed: () => _changeQty(i, 1),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(
-                  width: 24,
-                  height: 24,
-                ),
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.add_circle_outline),
-              ),
-              IconButton(
-                onPressed: () => _removeItem(i),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints.tightFor(
-                  width: 24,
-                  height: 24,
-                ),
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.delete_outline),
-              ),
-            ],
-          ),
+            );
+            if (compact) {
+              return Column(
+                children: [
+                  Row(
+                    children: [thumbnail(), const SizedBox(width: 10), details],
+                  ),
+                  const SizedBox(height: 8),
+                  Align(alignment: Alignment.centerRight, child: qtyControls()),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                thumbnail(),
+                const SizedBox(width: 10),
+                details,
+                const SizedBox(width: 8),
+                qtyControls(),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -1691,6 +2630,7 @@ class _CartLineItem {
   final String seller;
   final double price;
   final IconData icon;
+  final String? imageAsset;
   int qty;
 
   _CartLineItem({
@@ -1699,6 +2639,7 @@ class _CartLineItem {
     required this.price,
     required this.qty,
     required this.icon,
+    this.imageAsset,
   });
 }
 
@@ -1857,29 +2798,24 @@ class _ResidentSettingsPageState extends State<ResidentSettingsPage> {
                   ),
                   _settingsTile(
                     context,
+                    title: 'Share the App',
+                    icon: Icons.share_outlined,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ResidentSharePage(),
+                      ),
+                    ),
+                  ),
+                  _settingsTile(
+                    context,
                     title: 'Delete Account',
                     icon: Icons.delete_outline,
                     danger: true,
-                    onTap: () => showDialog<void>(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: const Text('Deleting Account'),
-                        content: const Text(
-                          'Type DELETE to confirm account removal.',
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('GO BACK'),
-                          ),
-                          FilledButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: const Color(0xFFD74637),
-                            ),
-                            child: const Text('Delete account'),
-                          ),
-                        ],
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ResidentDeleteAccountPage(),
                       ),
                     ),
                   ),
@@ -2016,6 +2952,185 @@ class ResidentChangeAddressPage extends StatelessWidget {
                   backgroundColor: const Color(0xFF2E35D3),
                 ),
                 child: const Text('CONTINUE'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ResidentDeleteAccountPage extends StatefulWidget {
+  const ResidentDeleteAccountPage({super.key});
+
+  @override
+  State<ResidentDeleteAccountPage> createState() =>
+      _ResidentDeleteAccountPageState();
+}
+
+class _ResidentDeleteAccountPageState extends State<ResidentDeleteAccountPage> {
+  final _confirmController = TextEditingController();
+  bool _accepted = false;
+
+  @override
+  void dispose() {
+    _confirmController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleDelete() async {
+    final typed = _confirmController.text.trim().toUpperCase();
+    if (typed != 'DELETE') {
+      _showFeature(context, 'Type DELETE to continue.');
+      return;
+    }
+    if (!_accepted) {
+      _showFeature(context, 'Please confirm account deletion notice.');
+      return;
+    }
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Final Confirmation'),
+        content: const Text(
+          'This action permanently deletes your resident account and profile records. Continue?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFFD74637),
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const RoleGatewayScreen()),
+      (route) => false,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Delete Account'),
+        backgroundColor: const Color(0xFFF7F8FF),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFF7F8FF), Color(0xFFF9F1EF)],
+          ),
+        ),
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFF1D4D4)),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        color: Color(0xFFD74637),
+                      ),
+                      SizedBox(width: 7),
+                      Text(
+                        'Before You Continue',
+                        style: TextStyle(
+                          color: Color(0xFFAC3226),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Deleting your account is permanent. Your profile, requests, and saved records will no longer be accessible.',
+                    style: TextStyle(
+                      color: Color(0xFF5A607B),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFE6E8F4)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Type DELETE to confirm',
+                    style: TextStyle(
+                      color: Color(0xFF32374E),
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextField(
+                    controller: _confirmController,
+                    decoration: const InputDecoration(
+                      hintText: 'DELETE',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  CheckboxListTile(
+                    value: _accepted,
+                    onChanged: (v) => setState(() => _accepted = v ?? false),
+                    contentPadding: EdgeInsets.zero,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    title: const Text(
+                      'I understand this action cannot be undone.',
+                      style: TextStyle(
+                        color: Color(0xFF4E546F),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _handleDelete,
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFFD74637),
+                ),
+                icon: const Icon(Icons.delete_forever_rounded),
+                label: const Text('Delete Account Permanently'),
               ),
             ),
           ],
@@ -2599,28 +3714,588 @@ class ResidentFaqPage extends StatelessWidget {
 
 class ResidentSharePage extends StatelessWidget {
   const ResidentSharePage({super.key});
+
+  static const _residentPrimary = Color(0xFF3E4CC7);
+  static const _residentSoft = Color(0xFFE7ECFF);
+
+  static const _shareMessage =
+      'Download BarangayMo Residents to access barangay services, '
+      'request documents, and community updates in one app.';
+  static const _androidLink =
+      'https://play.google.com/store/apps/details?id=ph.barangaymo.residents';
+  static const _iosLink = 'https://apps.apple.com/ph/app/barangaymo-residents';
+
+  Widget _shareOptionTile({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String actionText,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () => _showFeature(context, actionText),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 7),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: _residentPrimary),
+            const SizedBox(width: 9),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF2C3147),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _storeButton({
+    required BuildContext context,
+    required IconData icon,
+    required String label,
+    required String link,
+  }) {
+    return OutlinedButton.icon(
+      onPressed: () => _showFeature(context, 'Open store link: $link'),
+      icon: Icon(icon),
+      label: Text(label),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: _residentPrimary,
+        side: const BorderSide(color: Color(0xFFC7D2FF)),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Share')),
-      body: const Padding(
-        padding: EdgeInsets.all(12),
+      appBar: AppBar(
+        title: const Text('Share'),
+        backgroundColor: _residentPrimary,
+        foregroundColor: Colors.white,
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFF5F7FF), Color(0xFFF1F4FF)],
+          ),
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+              children: [
+                const Text(
+                  'BarangayMo Residents',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 35,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF2A3048),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Help your friends and family discover barangay services and community updates through Smart Barangay.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF616881),
+                    fontWeight: FontWeight.w600,
+                    height: 1.3,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Center(
+                  child: Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFFE2E6F2)),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Image.asset('public/barangaymo.png'),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFDDE4FA)),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x10000000),
+                        blurRadius: 8,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Share Options',
+                        style: TextStyle(
+                          fontSize: 27,
+                          fontWeight: FontWeight.w800,
+                          color: _residentPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      _shareOptionTile(
+                        context: context,
+                        icon: Icons.email_outlined,
+                        label: 'SHARE VIA EMAIL',
+                        actionText: 'Preparing email with app link...',
+                      ),
+                      _shareOptionTile(
+                        context: context,
+                        icon: Icons.facebook,
+                        label: 'SHARE VIA FACEBOOK',
+                        actionText: 'Preparing Facebook share post...',
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: _residentSoft,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFCDD8FF)),
+                        ),
+                        child: Text(
+                          _shareMessage,
+                          style: const TextStyle(
+                            color: Color(0xFF4C5577),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFDDE4FA)),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'App Store Links',
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.w800,
+                          color: _residentPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _storeButton(
+                              context: context,
+                              icon: Icons.apple,
+                              label: 'App Store',
+                              link: _iosLink,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _storeButton(
+                              context: context,
+                              icon: Icons.play_arrow_rounded,
+                              label: 'Google Play',
+                              link: _androidLink,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class ResidentCommunityChatPage extends StatefulWidget {
+  const ResidentCommunityChatPage({super.key});
+
+  @override
+  State<ResidentCommunityChatPage> createState() =>
+      _ResidentCommunityChatPageState();
+}
+
+class _ResidentCommunityChatPageState extends State<ResidentCommunityChatPage> {
+  final _messageController = TextEditingController();
+  final _scrollController = ScrollController();
+  String _channel = 'General';
+
+  final List<_ResidentChatMessage> _messages = [
+    _ResidentChatMessage(
+      sender: 'Barangay Admin',
+      text:
+          'Good morning residents. Water interruption is scheduled tomorrow 9:00 AM to 12:00 PM.',
+      channel: 'Announcements',
+      sentAt: DateTime.now().subtract(const Duration(minutes: 34)),
+      isMine: false,
+      isOfficial: true,
+    ),
+    _ResidentChatMessage(
+      sender: 'Lester C. Nadong',
+      text:
+          'Please avoid parking near the barangay hall gate for today\'s relief truck unloading.',
+      channel: 'General',
+      sentAt: DateTime.now().subtract(const Duration(minutes: 28)),
+      isMine: false,
+      isOfficial: true,
+    ),
+    _ResidentChatMessage(
+      sender: 'Shamira Balandra',
+      text: 'Noted po, salamat sa update.',
+      channel: 'General',
+      sentAt: DateTime.now().subtract(const Duration(minutes: 25)),
+      isMine: true,
+      isOfficial: false,
+    ),
+    _ResidentChatMessage(
+      sender: 'Health Desk',
+      text: 'Free blood pressure screening starts at 2:00 PM today.',
+      channel: 'Health',
+      sentAt: DateTime.now().subtract(const Duration(minutes: 14)),
+      isMine: false,
+      isOfficial: true,
+    ),
+    _ResidentChatMessage(
+      sender: 'Shamira Balandra',
+      text: 'Can seniors join without prior registration?',
+      channel: 'Health',
+      sentAt: DateTime.now().subtract(const Duration(minutes: 11)),
+      isMine: true,
+      isOfficial: false,
+    ),
+    _ResidentChatMessage(
+      sender: 'Health Desk',
+      text: 'Yes. Walk-ins are accepted from 1:30 PM onward.',
+      channel: 'Health',
+      sentAt: DateTime.now().subtract(const Duration(minutes: 9)),
+      isMine: false,
+      isOfficial: true,
+    ),
+  ];
+
+  static const _channels = ['General', 'Announcements', 'Health', 'Events'];
+
+  List<_ResidentChatMessage> get _filteredMessages =>
+      _messages.where((m) => m.channel == _channel).toList()
+        ..sort((a, b) => a.sentAt.compareTo(b.sentAt));
+
+  @override
+  void dispose() {
+    _messageController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  String _formatTime(DateTime time) {
+    final hour = time.hour % 12 == 0 ? 12 : time.hour % 12;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.hour >= 12 ? 'PM' : 'AM';
+    return '$hour:$minute $period';
+  }
+
+  void _sendMessage() {
+    final text = _messageController.text.trim();
+    if (text.isEmpty) return;
+    setState(() {
+      _messages.add(
+        _ResidentChatMessage(
+          sender: 'Shamira Balandra',
+          text: text,
+          channel: _channel,
+          sentAt: DateTime.now(),
+          isMine: true,
+          isOfficial: false,
+        ),
+      );
+      _messageController.clear();
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final messages = _filteredMessages;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Community Chat'),
+        backgroundColor: const Color(0xFFF7F8FC),
+      ),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFF7F8FC), Color(0xFFF2F4FF)],
+          ),
+        ),
         child: Column(
           children: [
-            Text(
-              'BarangayMo Residents',
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.w700),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE1E5F4)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE5EBFF),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.forum_rounded,
+                            color: Color(0xFF3B4FC3),
+                          ),
+                        ),
+                        const SizedBox(width: 9),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'West Tapinac Resident Chat',
+                                style: TextStyle(
+                                  color: Color(0xFF2D334A),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 17,
+                                ),
+                              ),
+                              Text(
+                                '134 online now',
+                                style: TextStyle(
+                                  color: Color(0xFF5F6682),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE6F7EC),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Text(
+                            'LIVE',
+                            style: TextStyle(
+                              color: Color(0xFF2B8456),
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: _channels.map((entry) {
+                          final active = entry == _channel;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 6),
+                            child: ChoiceChip(
+                              label: Text(entry),
+                              selected: active,
+                              onSelected: (_) =>
+                                  setState(() => _channel = entry),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            SizedBox(height: 8),
-            Text('Help your friends discover community services.'),
-            SizedBox(height: 20),
-            ListTile(
-              leading: Icon(Icons.email),
-              title: Text('SHARE VIA EMAIL'),
+            Expanded(
+              child: messages.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No messages yet for this channel.',
+                        style: TextStyle(
+                          color: Color(0xFF6A7089),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    )
+                  : ListView.separated(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.fromLTRB(12, 2, 12, 10),
+                      itemCount: messages.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 7),
+                      itemBuilder: (context, index) {
+                        final message = messages[index];
+                        final mine = message.isMine;
+                        return Align(
+                          alignment: mine
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: Container(
+                            constraints: const BoxConstraints(maxWidth: 300),
+                            padding: const EdgeInsets.fromLTRB(11, 8, 11, 8),
+                            decoration: BoxDecoration(
+                              color: mine
+                                  ? const Color(0xFFDCE6FF)
+                                  : const Color(0xFFFFFFFF),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: mine
+                                    ? const Color(0xFFC3D3FF)
+                                    : const Color(0xFFE2E6F4),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      message.sender,
+                                      style: TextStyle(
+                                        color: mine
+                                            ? const Color(0xFF3346A8)
+                                            : const Color(0xFF2E334A),
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    if (message.isOfficial) ...[
+                                      const SizedBox(width: 4),
+                                      const Icon(
+                                        Icons.verified,
+                                        color: Color(0xFF2E8B57),
+                                        size: 14,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  message.text,
+                                  style: const TextStyle(
+                                    color: Color(0xFF3A4057),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  _formatTime(message.sentAt),
+                                  style: const TextStyle(
+                                    color: Color(0xFF78809A),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
             ),
-            ListTile(
-              leading: Icon(Icons.facebook),
-              title: Text('SHARE VIA FACEBOOK'),
+            SafeArea(
+              top: false,
+              minimum: const EdgeInsets.only(bottom: 6),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF7F8FC),
+                  border: Border(top: BorderSide(color: Color(0xFFE0E4F3))),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _messageController,
+                        minLines: 1,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: 'Message $_channel...',
+                          filled: true,
+                          fillColor: Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                              color: Color(0xFFDCE1F1),
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                        ),
+                        onSubmitted: (_) => _sendMessage(),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton(
+                      onPressed: _sendMessage,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFF4052CA),
+                        padding: const EdgeInsets.all(12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: const Icon(Icons.send_rounded),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -2629,78 +4304,58 @@ class ResidentSharePage extends StatelessWidget {
   }
 }
 
+class _ResidentChatMessage {
+  final String sender;
+  final String text;
+  final String channel;
+  final DateTime sentAt;
+  final bool isMine;
+  final bool isOfficial;
+
+  const _ResidentChatMessage({
+    required this.sender,
+    required this.text,
+    required this.channel,
+    required this.sentAt,
+    required this.isMine,
+    required this.isOfficial,
+  });
+}
+
 class ResidentSupportPage extends StatelessWidget {
   const ResidentSupportPage({super.key});
+
+  static const _officePoint = LatLng(14.8386, 120.2865);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Support'),
-        backgroundColor: const Color(0xFFF7F8FF),
+        backgroundColor: const Color(0xFFF7F8FC),
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFF7F8FF), Color(0xFFF8F0EE)],
-          ),
-        ),
+        color: const Color(0xFFF7F8FC),
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+          padding: const EdgeInsets.fromLTRB(14, 16, 14, 16),
           children: [
-            Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: const LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF8B4D44), Color(0xFFB36A5B)],
-                ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x25000000),
-                    blurRadius: 12,
-                    offset: Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: const Row(
-                children: [
-                  CircleAvatar(
-                    radius: 23,
-                    backgroundColor: Color(0x33FFFFFF),
-                    child: Icon(Icons.support_agent, color: Colors.white),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Welcome, Shamira',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                        SizedBox(height: 3),
-                        Text(
-                          'How can we help you today?',
-                          style: TextStyle(
-                            color: Color(0xFFFFE5E0),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            const Text(
+              'Welcome, Shamira',
+              style: TextStyle(
+                color: Color(0xFF2B3047),
+                fontSize: 31,
+                fontWeight: FontWeight.w900,
               ),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 2),
+            const Text(
+              'How can we help you?',
+              style: TextStyle(
+                color: Color(0xFF5E667F),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 14),
             Row(
               children: [
                 Expanded(
@@ -2717,7 +4372,7 @@ class ResidentSupportPage extends StatelessWidget {
                 Expanded(
                   child: _supportAction(
                     context,
-                    title: 'Email us',
+                    title: 'Email Us',
                     subtitle: 'support@barangaymo.ph',
                     icon: Icons.email_outlined,
                     onTap: () =>
@@ -2729,8 +4384,8 @@ class ResidentSupportPage extends StatelessWidget {
                   child: _supportAction(
                     context,
                     title: 'Search FAQs',
-                    subtitle: 'Answers',
-                    icon: Icons.help_center_outlined,
+                    subtitle: 'Help Center',
+                    icon: Icons.search_rounded,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -2748,23 +4403,24 @@ class ResidentSupportPage extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFE6E8F4)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x0E000000),
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
+                  ),
+                ],
               ),
               child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.location_on, color: Color(0xFF845046)),
-                      SizedBox(width: 7),
-                      Text(
-                        'Office Location',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF2F3248),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    'Office Location',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF2F3248),
+                    ),
                   ),
                   SizedBox(height: 6),
                   Text(
@@ -2786,17 +4442,64 @@ class ResidentSupportPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
+            Container(
+              height: 220,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFE3E7F4)),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x10000000),
+                    blurRadius: 9,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: FlutterMap(
+                options: const MapOptions(
+                  initialCenter: _officePoint,
+                  initialZoom: 15.1,
+                  interactionOptions: InteractionOptions(
+                    flags: InteractiveFlag.drag | InteractiveFlag.pinchZoom,
+                  ),
+                ),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'com.example.barangaymo_app',
+                  ),
+                  const MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: _officePoint,
+                        width: 44,
+                        height: 44,
+                        child: Icon(
+                          Icons.location_on,
+                          color: Color(0xFFD44B43),
+                          size: 36,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
             SizedBox(
               width: double.infinity,
-              child: FilledButton.icon(
+              child: OutlinedButton.icon(
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (_) => const ResidentBugReportPage(),
                   ),
                 ),
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E35D3),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF3B4360),
+                  side: const BorderSide(color: Color(0xFFD6DBEB)),
                 ),
                 icon: const Icon(Icons.campaign),
                 label: const Text('Submit a Support Ticket'),
@@ -2819,17 +4522,24 @@ class ResidentSupportPage extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: const Color(0xFFE6E8F4)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0F000000),
+              blurRadius: 8,
+              offset: Offset(0, 3),
+            ),
+          ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(icon, color: const Color(0xFF5D647F)),
-            const SizedBox(height: 6),
+            const SizedBox(height: 7),
             Text(
               title,
               style: const TextStyle(
@@ -2841,6 +4551,7 @@ class ResidentSupportPage extends StatelessWidget {
               subtitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Color(0xFF666D88),
                 fontWeight: FontWeight.w600,
@@ -3151,23 +4862,9 @@ class _ResidentVerifyProfilePageState extends State<ResidentVerifyProfilePage> {
               ),
               child: Row(
                 children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFFFFF2EE), Color(0xFFF7E5DE)],
-                      ),
-                      border: Border.all(color: const Color(0x66FFFFFF)),
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: Color(0xFF874A3E),
-                      size: 34,
-                    ),
+                  _ResidentEditableProfileAvatar(
+                    size: 64,
+                    onEdit: () => _openResidentProfilePhotoEditor(context),
                   ),
                   const SizedBox(width: 12),
                   const Expanded(
@@ -3175,7 +4872,7 @@ class _ResidentVerifyProfilePageState extends State<ResidentVerifyProfilePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Manuel Dalanan',
+                          'Shamira Balandra',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 21,
@@ -3199,8 +4896,7 @@ class _ResidentVerifyProfilePageState extends State<ResidentVerifyProfilePage> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () =>
-                        _showFeature(context, 'Edit profile photo'),
+                    onPressed: () => _openResidentProfilePhotoEditor(context),
                     icon: const Icon(Icons.edit, color: Colors.white),
                   ),
                 ],
@@ -3710,12 +5406,103 @@ class ResidentNotificationsPage extends StatelessWidget {
         ),
         body: const TabBarView(
           children: [
-            Center(child: Text('Empty Notifications')),
+            _ResidentJobNotificationsTab(),
             _ResidentHistory(),
             Center(child: Text('Empty Transactions')),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ResidentJobNotificationsTab extends StatelessWidget {
+  const _ResidentJobNotificationsTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<int>(
+      valueListenable: _ResidentJobsHub.refresh,
+      builder: (_, __, ___) {
+        final items = _ResidentJobsHub.notifications;
+        if (items.isEmpty) {
+          return const Center(child: Text('Empty Notifications'));
+        }
+        return ListView(
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+          children: [
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: _ResidentJobsHub.markAllRead,
+                icon: const Icon(Icons.done_all_rounded, size: 18),
+                label: const Text('Mark all as read'),
+              ),
+            ),
+            ...items.map((item) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 9),
+                decoration: BoxDecoration(
+                  color: item.unread ? const Color(0xFFF4F7FF) : Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: item.unread
+                        ? const Color(0xFFD7E3FF)
+                        : const Color(0xFFE7E9F2),
+                  ),
+                ),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: item.accent.withValues(alpha: 0.16),
+                    child: Icon(item.icon, color: item.accent),
+                  ),
+                  title: Text(
+                    item.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF2F3248),
+                    ),
+                  ),
+                  subtitle: Text(
+                    item.subtitle,
+                    style: const TextStyle(
+                      color: Color(0xFF636983),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  trailing: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _ResidentJobsHub.timeAgo(item.createdAt),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFF6B7190),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (item.unread)
+                        Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(0xFF4A64FF),
+                          ),
+                        ),
+                    ],
+                  ),
+                  onTap: () {
+                    item.unread = false;
+                    _ResidentJobsHub.refresh.value++;
+                  },
+                ),
+              );
+            }),
+          ],
+        );
+      },
     );
   }
 }

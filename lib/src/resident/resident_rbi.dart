@@ -1,4 +1,4 @@
-part of 'package:barangaymo_app/main.dart';
+part of barangaymo_app;
 
 class ResidentRbiCardPage extends StatelessWidget {
   const ResidentRbiCardPage({super.key});
@@ -11,9 +11,10 @@ class ResidentRbiCardPage extends StatelessWidget {
           title: const Text('RBI CARD'),
           backgroundColor: const Color(0xFFF7F8FF),
           bottom: TabBar(
-            indicatorColor: const Color(0xFF2E35D3),
+            indicatorColor: const Color(0xFF3D53C8),
+            indicatorWeight: 3,
             labelColor: const Color(0xFF8B4E46),
-            unselectedLabelColor: const Color(0xFF5F637B),
+            unselectedLabelColor: const Color(0xFF616783),
             labelStyle: const TextStyle(fontWeight: FontWeight.w800),
             tabs: const [
               Tab(text: 'My Card'),
@@ -67,29 +68,47 @@ class _RbiMyCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    height: 170,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFFE8ECFF), Color(0xFFF1F4FF)],
+                  Stack(
+                    children: [
+                      Container(
+                        height: 178,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          gradient: const LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Color(0xFFE8ECFF), Color(0xFFF1F4FF)],
+                          ),
+                        ),
                       ),
-                    ),
-                    child: const Center(
-                      child: CircleAvatar(
-                        radius: 38,
-                        backgroundColor: Colors.white,
-                        child: Icon(Icons.person, size: 40),
+                      Positioned(
+                        right: -18,
+                        top: -20,
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withValues(alpha: 0.3),
+                          ),
+                        ),
                       ),
-                    ),
+                      const Positioned.fill(
+                        child: Center(
+                          child: CircleAvatar(
+                            radius: 38,
+                            backgroundColor: Colors.white,
+                            child: Icon(Icons.person, size: 40),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 10),
                   const Text(
                     'Richard Portacio Perez',
                     style: TextStyle(
-                      fontSize: 38,
+                      fontSize: 21,
                       fontWeight: FontWeight.w900,
                       color: Color(0xFF1F1A22),
                     ),
@@ -106,8 +125,8 @@ class _RbiMyCard extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        height: 170,
-                        width: 170,
+                        height: 162,
+                        width: 162,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(14),
                           color: Colors.white,
@@ -145,6 +164,31 @@ class _RbiMyCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF6F8FF),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE4E8F4)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.verified_user_rounded, color: Color(0xFF3E56C8)),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Verified by Barangay Records Office • Last sync Feb 20, 2026',
+                            style: TextStyle(
+                              color: Color(0xFF59607B),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   FilledButton.icon(
                     onPressed: () =>
                         _showFeature(context, 'Digital RBI card shared.'),
@@ -178,19 +222,43 @@ class _RbiProfileData extends StatelessWidget {
       ),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
-        children: const [
-          _RbiInfoCard(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE3E8F4)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.account_box_rounded, color: Color(0xFF4A57BE)),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Manage your personal identity records and linked credentials.',
+                    style: TextStyle(
+                      color: Color(0xFF5C637E),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const _RbiInfoCard(
             title: 'Personal',
             subtitle:
                 'Nationality, gender, date of birth, blood type, civil status, religion',
             icon: Icons.person_outline,
           ),
-          _RbiInfoCard(
+          const _RbiInfoCard(
             title: 'Government IDs',
             subtitle: 'SSS number, TIN, driver license, passport details',
             icon: Icons.badge_outlined,
           ),
-          _RbiInfoCard(
+          const _RbiInfoCard(
             title: 'Education / Health',
             subtitle: 'Attainment, profession, job status, height and weight',
             icon: Icons.school_outlined,
@@ -216,18 +284,48 @@ class _RbiTransactions extends StatelessWidget {
       ),
       child: ListView(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
-        children: const [
-          _RbiTxnCard(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF3F4EC8), Color(0xFF7181F2)],
+              ),
+            ),
+            child: const Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: Color(0x33FFFFFF),
+                  child: Icon(Icons.history_rounded, color: Colors.white),
+                ),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Transaction log shows all recent RBI activities and verification events.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const _RbiTxnCard(
             title: 'RBI Profile Update',
             date: 'Feb 20, 2026',
             status: 'Completed',
           ),
-          _RbiTxnCard(
+          const _RbiTxnCard(
             title: 'Card Verification Check',
             date: 'Feb 18, 2026',
             status: 'Completed',
           ),
-          _RbiTxnCard(
+          const _RbiTxnCard(
             title: 'Barangay Service Access',
             date: 'Feb 14, 2026',
             status: 'Completed',
@@ -336,6 +434,7 @@ class _RbiInfoCard extends StatelessWidget {
           ),
         ),
         trailing: const Icon(Icons.chevron_right),
+        onTap: () => _showFeature(context, 'Opening $title details'),
       ),
     );
   }
